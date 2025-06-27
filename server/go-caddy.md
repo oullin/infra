@@ -102,7 +102,7 @@ RUN apk add --no-cache tzdata
 WORKDIR ${BUILD_DIR}
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+COPY .. .
 RUN CGO_ENABLED=0 go build -tags "${BUILD_TAGS}" -o ${BUILD_DIR}/${BINARY_NAME} -ldflags="-s -w -X main.Version=${APP_VERSION}" .
 
 # --- Final Stage ---
