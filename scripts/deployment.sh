@@ -55,14 +55,11 @@ fi
 
 echo "--> Secret files verified successfully."
 
-echo "--> Secret files verified successfully."
-
-
 # --- Environment Preparation ---
-echo "--> [2/3] Exporting secret paths as environment variables..."
-
 # Export the variables that our dynamic docker-compose.yml file will use.
 # These exports will only be available for the duration of this script.
+echo "--> [2/3] Exporting secret paths as environment variables..."
+
 export POSTGRES_USER_SECRET_PATH="$USER_SECRET_FILE"
 export POSTGRES_PASSWORD_SECRET_PATH="$PASSWORD_SECRET_FILE"
 export POSTGRES_DB_SECRET_PATH="$DB_SECRET_FILE"
@@ -71,9 +68,9 @@ echo "--> Environment variables are set."
 
 
 # --- Deployment Execution ---
-cd $API_DIR || exit 1
-
 echo "--> [3/3] Launching Docker Compose services..."
+
+cd $API_DIR || exit 1
 
 make build:prod
 
