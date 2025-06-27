@@ -1,18 +1,14 @@
-## Production-Ready Dockerized PostgreSQL Deployment Guide
+# Production-Ready Dockerized PostgreSQL Deployment Guide
 
-### Introduction
+## Introduction
 
-This guide provides a comprehensive, step-by-step manual for deploying a secure, robust, and production-ready PostgreSQL 
-database using Docker and Docker Compose on a single VPS.
+This guide provides a comprehensive, step-by-step manual for deploying a secure, robust, and production-ready PostgreSQL database using Docker and Docker Compose on a single VPS.
 
-The principles and configurations outlined here are designed for high-security environments, emphasizing best practices 
-for credential management, data persistence, and automated workflows. This document captures a complete refinement 
-process, providing not just the final solution but the reasoning behind each critical decision, making it ideal for 
-internal documentation and onboarding.
+The principles and configurations outlined here are designed for high-security environments, emphasizing best practices for credential management, data persistence, and automated workflows. This document captures a complete refinement process, providing not just the final solution but the reasoning behind each critical decision, making it ideal for internal documentation and onboarding.
 
 ---
 
-### Prerequisites
+## Prerequisites
 
 - A Linux-based VPS (this guide is tailored for Hostinger).
 - Docker and Docker Compose installed on the VPS. (Hostinger's "Ubuntu 22.04 with Docker" template is recommended).
@@ -23,8 +19,7 @@ internal documentation and onboarding.
 
 ## Step 1: Core Principles of a Production Setup
 
-Before writing any code, it's crucial to understand the principles that separate a development setup from a production 
-one. A robust architecture, especially for a stateful service like a database, requires deliberate choices about security and persistence.
+Before writing any code, it's crucial to understand the principles that separate a development setup from a production one. A robust architecture, especially for a stateful service like a database, requires deliberate choices about security and persistence.
 
 ### Principle 1: Secure Credential Management (Secrets vs. `.env` files)
 
@@ -47,12 +42,7 @@ one. A robust architecture, especially for a stateful service like a database, r
 
 ## Step 2: Crafting the `docker-compose.yml`
 
-This file is the heart of our deployment. We will define three core services:
-1.  `api-db`: The long-running, persistent PostgreSQL database.
-2.  `db-migrate`: A short-lived "job" container to securely run database migrations.
-3.  `api`: A placeholder for your main application service.
-
-Create a `docker-compose.yml` file with the following content:
+This file is the heart of our deployment. It is designed to be **environment-agnostic**, supporting both local development and CI/CD pipelines through dynamic variable substitution.
 
 ```yaml
 version: '3.9'
@@ -136,12 +126,14 @@ volumes:
     driver: local
 
 secrets:
+  # This block is now dynamic. It uses shell environment variables if they exist,
+  # otherwise it falls back to the default local path for development.
   postgres_user:
-    file: ./database/infra/secrets/postgres_user
+    file: ${POSTGRES_USER_SECRET_PATH:-./database/infra/secrets/postgres_user}
   postgres_password:
-    file: ./database/infra/secrets/postgres_password
+    file: ${POSTGRES_PASSWORD_SECRET_PATH:-./database/infra/secrets/postgres_password}
   postgres_db:
-    file: ./database/infra/secrets/postgres_db
+    file: ${POSTGRES_DB_SECRET_PATH:-./database/infra/secrets/postgres_db}
 
 networks:
   oullin_net:
@@ -328,9 +320,9 @@ db:seed:
 
 ---
 
-## Step 5: Final Setup and Deployment Workflow
+## Step 5: Final Setup Workflow
 
-1.  **Create Secret Files:** Create the files for your secrets. The `printf` command is used to avoid adding trailing newlines.
+1.  **Create Secret Files:** For local development, create the files in their default locations.
     ```bash
     mkdir -p ./database/infra/secrets
     printf "your_db_user" > ./database/infra/secrets/postgres_user
@@ -340,18 +332,38 @@ db:seed:
 
 2.  **Create Migration Files:** Place your SQL migration files (e.g., `0001_create_users.up.sql`) in the `./database/migrations/` directory.
 
-3.  **Generate SSL Certificates:** Run the Makefile command to create self-signed certificates for encrypted connections.
+3.  **Generate SSL Certificates:** Run the Makefile command.
     ```bash
     make db:secure
     ```
 
-4.  **Deploy:** Start all services.
+4.  **Deploy:** Run the simple `up` command from the Makefile.
     ```bash
     make db:up
     ```
     Docker Compose will automatically start the database, wait for it to be healthy, run the migrations, and then start your application.
 
-5.  **Apply New Migrations:** When you add new migration files, simply run `make db:up` again. Docker Compose is smart enough to see that only the `db-migrate` job needs to be re-run before your application restarts.
+---
+
+## Step 6: Preparing for CI/CD with Dynamic Secret Paths
+
+To make this setup truly automated and environment-agnostic, the hardcoded paths to secret files were made dynamic in Step 2. This allows your CI/CD pipeline to inject secrets from a secure vault without modifying the `docker-compose.yml` file.
+
+### How It Works
+
+The `secrets` block in our final `docker-compose.yml` uses this syntax:
+`file: ${POSTGRES_USER_SECRET_PATH:-./database/infra/secrets/postgres_user}`
+
+- **In a CI/CD Pipeline:** Your pipeline should fetch secrets from a vault (e.g., AWS Secrets Manager, GitHub Secrets) and save them to a temporary path. Then, it exports an environment variable before running Docker Compose:
+  ```bash
+  # Example command in a CI/CD script
+  export POSTGRES_USER_SECRET_PATH=/tmp/prod_secrets/db_user
+  docker compose up -d
+  ```
+  Docker Compose will use the path specified by the environment variable.
+
+- **In Local Development:** When you run `make db:up` locally, the `POSTGRES_USER_SECRET_PATH` environment variable is not set. Docker Compose automatically falls back to the default value: `./database/infra/secrets/postgres_user`.
+
+This powerful technique ensures a single, clean `docker-compose.yml` can be used across all environments, from a developer's laptop to a fully automated production deployment.
 
 This completes the guide. You now have a fully documented, secure, and automated system for deploying and managing your PostgreSQL database.
-
