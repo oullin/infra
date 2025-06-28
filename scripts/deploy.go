@@ -10,8 +10,10 @@ import (
 
 func main() {
 	// --- Configuration ---
-	secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
-	apiDir := strings.TrimSpace("/home/gocanto/Sites/oullin/api")
+	//secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
+	//apiDir := strings.TrimSpace("/home/gocanto/Sites/oullin/api")
+	secretsDir := strings.TrimSpace("/Users/gus/.oullin/secrets")
+	apiDir := strings.TrimSpace("/Users/gus/Sites/oullin/api")
 
 	// Resolves to /home/gocanto/Sites/oullin
 	projectRoot := strings.TrimSpace(filepath.Dir(apiDir) + "/api")
@@ -50,9 +52,9 @@ func main() {
 		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", userSecretFile),
 		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", passwordSecretFile),
 		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", dbSecretFile),
-		fmt.Sprintf("DB_USER=%s", dbUser),
-		fmt.Sprintf("DB_PASSWORD=%s", dbPassword),
-		fmt.Sprintf("DB_NAME=%s", dbName),
+		fmt.Sprintf("ENV_DB_USER_NAME=%s", dbUser),
+		fmt.Sprintf("ENV_DB_USER_PASSWORD=%s", dbPassword),
+		fmt.Sprintf("ENV_DB_DATABASE_NAME=%s", dbName),
 	}
 
 	cmd := exec.Command("make", makeArgs...)
