@@ -1,4 +1,4 @@
-package cli
+package backup
 
 import (
 	"fmt"
@@ -8,38 +8,13 @@ import (
 	"strings"
 )
 
-type APIDeployment struct {
-	secretsDir   string
-	apiDir       string
-	projectRoot  string
-	apiDBSecrets APIDbSecrets
-}
-
-type APIDbSecrets struct {
-	userSecretFile     string
-	passwordSecretFile string
-	dbSecretFile       string
-}
-
-func NewAPIDeployment(secretsDir, apiDir string) *APIDeployment {
-	return &APIDeployment{
-		secretsDir:  secretsDir,
-		apiDir:      apiDir,
-		projectRoot: strings.TrimSpace(filepath.Dir(apiDir) + "/api"),
-		apiDBSecrets: APIDbSecrets{
-			userSecretFile:     filepath.Join(secretsDir, "postgres_user"),
-			passwordSecretFile: filepath.Join(secretsDir, "postgres_password"),
-			dbSecretFile:       filepath.Join(secretsDir, "postgres_db"),
-		},
-	}
-}
-
-func Handle() {
+func main() {
 	// --- Configuration ---
-	//secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
-	//apiDir := strings.TrimSpace("/home/gocanto/Sites/oullin/api")
-	secretsDir := strings.TrimSpace("/Users/gus/.oullin/secrets")
-	apiDir := strings.TrimSpace("/Users/gus/Sites/oullin/api")
+	secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
+	apiDir := strings.TrimSpace("/home/gocanto/Sites/oullin/api")
+
+	//secretsDir := strings.TrimSpace("/Users/gus/.oullin/secrets")
+	//apiDir := strings.TrimSpace("/Users/gus/Sites/oullin/api")
 
 	// Resolves to /home/gocanto/Sites/oullin
 	projectRoot := strings.TrimSpace(filepath.Dir(apiDir) + "/api")
@@ -51,18 +26,18 @@ func Handle() {
 	passwordSecretFile := filepath.Join(secretsDir, "postgres_password")
 	dbSecretFile := filepath.Join(secretsDir, "postgres_db")
 
-	checkFile(userSecretFile)
-	checkFile(passwordSecretFile)
-	checkFile(dbSecretFile)
+	oldCheckFile(userSecretFile)
+	oldCheckFile(passwordSecretFile)
+	oldCheckFile(dbSecretFile)
 
 	fmt.Println("--> Secret files verified successfully.")
 
 	// --- 2. Read Secret Contents ---
 	fmt.Println("--> [2/3] Reading secret contents from files...")
 
-	dbUser := readSecretContent(userSecretFile)
-	dbPassword := readSecretContent(passwordSecretFile)
-	dbName := readSecretContent(dbSecretFile)
+	dbUser := oldReadSecretContent(userSecretFile)
+	dbPassword := oldReadSecretContent(passwordSecretFile)
+	dbName := oldReadSecretContent(dbSecretFile)
 
 	fmt.Println("--> Secret contents loaded.")
 
@@ -100,7 +75,7 @@ func Handle() {
 }
 
 // checkFile verifies a file exists, exiting on error.
-func checkFile(path string) {
+func oldCheckFile(path string) {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			fmt.Printf("Error: Secret file not found at: %s\n", path)
@@ -113,7 +88,7 @@ func checkFile(path string) {
 }
 
 // readSecretContent reads the content of a secret file, trims whitespace, and returns it.
-func readSecretContent(path string) string {
+func oldReadSecretContent(path string) string {
 	content, err := os.ReadFile(path)
 
 	if err != nil {
