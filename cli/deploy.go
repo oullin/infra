@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func main() {
+func Handle() {
 	// --- Configuration ---
 	//secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
 	//apiDir := strings.TrimSpace("/home/gocanto/Sites/oullin/api")
