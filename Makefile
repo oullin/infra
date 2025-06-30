@@ -1,7 +1,10 @@
 .PHONY: watch format build
 
-ROOT_NETWORK          := oullin_infra
-ROOT_PATH             := $(shell pwd)
+include .env
+
+ROOT_NETWORK := oullin_infra
+ROOT_PATH := $(shell pwd)
+BINARY_FILE_NAME := deployment
 
 format:
 	gofmt -w -s .
@@ -12,7 +15,8 @@ watch:
 	cd $(ROOT_PATH) && air
 
 build:
-	docker compose build deployment
+	docker compose build $(BINARY_FILE_NAME)
 	docker create --name infra_extractor oullin/infra-builder
-	docker cp infra_extractor:/home/$(DOCKER_INFRA_USER)/bin/infra ./infra
+	docker cp infra_extractor:/home/$(DOCKER_INFRA_USER)/bin/$(BINARY_FILE_NAME) ./bin/$(BINARY_FILE_NAME)
 	docker rm infra_extractor
+
