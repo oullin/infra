@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+type APIDeployment struct {
+	secretsDir   string
+	apiDir       string
+	projectRoot  string
+	apiDBSecrets APIDbSecrets
+}
+
+type APIDbSecrets struct {
+	userSecretFile     string
+	passwordSecretFile string
+	dbSecretFile       string
+}
+
+func NewAPIDeployment(secretsDir, apiDir string) *APIDeployment {
+	return &APIDeployment{
+		secretsDir:  secretsDir,
+		apiDir:      apiDir,
+		projectRoot: strings.TrimSpace(filepath.Dir(apiDir) + "/api"),
+		apiDBSecrets: APIDbSecrets{
+			userSecretFile:     filepath.Join(secretsDir, "postgres_user"),
+			passwordSecretFile: filepath.Join(secretsDir, "postgres_password"),
+			dbSecretFile:       filepath.Join(secretsDir, "postgres_db"),
+		},
+	}
+}
+
 func Handle() {
 	// --- Configuration ---
 	//secretsDir := strings.TrimSpace("/home/gocanto/.oullin/secrets")
