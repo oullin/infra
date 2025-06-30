@@ -10,6 +10,8 @@ delay = 1000
 exclude_dir = [
     ".github",
     "tmp",
+    "bin",
+    "docker"
 ]
 exclude_file = []
 exclude_regex = ["_test\\.go"]

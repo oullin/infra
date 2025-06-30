@@ -28,7 +28,7 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 	}
 
 	var dbSecrets DbSecrets
-	if err := parseDbSecrets(&dbSecrets); err != nil {
+	if err := parseDbSecrets(dbSecretFiles, &dbSecrets); err != nil {
 		return nil, err
 	}
 
@@ -52,9 +52,9 @@ func (d Deployment) Run() error {
 	)
 
 	makeArgs := []string{
-		"-C",
-		projectRoot,
-		"build:prod",
+		//"-C",
+		//projectRoot,
+		"build-test", //"build:prod",
 		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", d.dbSecretFile.dbUser),
 		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", d.dbSecretFile.dbPass),
 		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", d.dbSecretFile.dbName),

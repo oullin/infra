@@ -1,5 +1,7 @@
 .env
+.env.production
 
 .idea/
+tmp/
 bin/*
 !bin/.gitkeep

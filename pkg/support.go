@@ -21,12 +21,18 @@ func FilesExist(files []string) error {
 }
 
 func FileExists(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("Error: File not found at: %s\n", path)
-		} else {
-			return fmt.Errorf("Error: Could not stat file %s: %v\n", path, err)
-		}
+	info, err := os.Stat(path)
+
+	if err != nil {
+		return fmt.Errorf("Could not stat file %s: %v\n", path, err)
+	}
+
+	if os.IsNotExist(err) {
+		return fmt.Errorf("Error: File not found at: %s\n", path)
+	}
+
+	if info.IsDir() {
+		return fmt.Errorf("Error: %s is a directory\n", path)
 	}
 
 	return nil

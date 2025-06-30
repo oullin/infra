@@ -17,20 +17,25 @@ func assertSecretFiles(f DbSecretFiles) error {
 	return nil
 }
 
-func parseDbSecrets(s *DbSecrets) error {
+func parseDbSecrets(files DbSecretFiles, s *DbSecrets) error {
 	var err error
+	var username, password, dbname string
 
-	if s.dbUser, err = pkg.GetFileContent(s.dbUser); err != nil {
+	if dbname, err = pkg.GetFileContent(files.dbName); err != nil {
 		return fmt.Errorf("Error: Could not parse db name secret file: %v\n", err)
 	}
 
-	if s.dbName, err = pkg.GetFileContent(s.dbName); err != nil {
+	if username, err = pkg.GetFileContent(files.dbUser); err != nil {
 		return fmt.Errorf("Error: Could not parse db user name secret file: %v\n", err)
 	}
 
-	if s.dbPass, err = pkg.GetFileContent(s.dbPass); err != nil {
+	if password, err = pkg.GetFileContent(files.dbPass); err != nil {
 		return fmt.Errorf("Error: Could not parse db user password secret file: %v\n", err)
 	}
+
+	s.dbName = dbname
+	s.dbUser = username
+	s.dbPass = password
 
 	return nil
 }

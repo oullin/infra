@@ -17,9 +17,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-
-	deployer, err := api.NewDeployment(validate, api.DeploymentRequest{
+	deployer, err := api.NewDeployment(getValidator(), api.DeploymentRequest{
 		SecretsDir: os.Getenv("API_SECRETS_DIRECTORY"),
 		ProjectDir: os.Getenv("API_DIRECTORY"),
 	})
@@ -28,5 +26,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := deployer.Run(); err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println(deployer)
+}
+
+func getValidator() *validator.Validate {
+	return validator.New(
+		validator.WithRequiredStructEnabled(),
+	)
 }
