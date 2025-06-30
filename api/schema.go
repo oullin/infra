@@ -1,27 +1,34 @@
 package api
 
+const dbNameFileName = "postgres_db"
+const dbUserNameFileName = "postgres_user"
+const dbPasswordFileName = "postgres_password"
+
 type DeploymentRequest struct {
-	SecretsDir string
-	ApiDir     string
+	SecretsDir string `validate:"required"`
+	ProjectDir string `validate:"required"`
 }
 
 type Deployment struct {
-	secretsDir   string
-	apiDir       string
-	projectRoot  string
-	apiDBSecrets DbSecrets
-	commands     Commands
+	secretsDir   string        `validate:"required"`
+	projectDir   string        `validate:"required"`
+	dbSecrets    DbSecrets     `validate:"required"`
+	dbSecretFile DbSecretFiles `validate:"required"`
 }
 
 type DbSecrets struct {
-	userSecretFile        string
-	userSecretContent     string
-	passwordSecretFile    string
-	passwordSecretContent string
-	dbSecretFile          string
-	dbSecretContent       string
+	dbUser string
+	dbName string
+	dbPass string
+}
+
+type DbSecretFiles struct {
+	dbUser string
+	dbName string
+	dbPass string
 }
 
 type Commands struct {
-	Production string
+	signature string
+	directory string
 }

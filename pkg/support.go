@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+func Trim(seed string) string {
+	return strings.TrimSpace(seed)
+}
+
 func FilesExist(files []string) error {
 	for _, file := range files {
 		if err := FileExists(file); err != nil {

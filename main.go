@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"github.com/oullin/infra/api"
 	"log"
@@ -16,9 +17,11 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	deployer := api.NewAPIDeployment(api.DeploymentRequest{
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	deployer := api.NewDeployment(validate, api.DeploymentRequest{
 		SecretsDir: os.Getenv("API_SECRETS_DIRECTORY"),
-		ApiDir:     os.Getenv("API_DIRECTORY"),
+		ProjectDir: os.Getenv("API_DIRECTORY"),
 	})
 
 	if err = deployer.Run(); err != nil {
