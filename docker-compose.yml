@@ -1,43 +1,21 @@
-# Define the source of the secrets on the host machine.
-secrets:
-  postgres_user:
-    file: ${POSTGRES_USER_SECRET_PATH:-./database/infra/secrets/postgres_user}
-  postgres_password:
-    file: ${POSTGRES_PASSWORD_SECRET_PATH:-./database/infra/secrets/postgres_password}
-  postgres_db:
-    file: ${POSTGRES_DB_SECRET_PATH:-./database/infra/secrets/postgres_db}
-
-volumes:
-  caddy_data:
-  caddy_config:
-  # --- DB: Define a named volume at the top level.
-  #     Docker will manage its lifecycle.
-  oullin_db_data:
-    driver: local
-
 networks:
-  caddy_net:
-    name: caddy_net
-    driver: bridge
   oullin_net:
     name: oullin_net
     driver: bridge
 
 services:
-deployment:
-env_file:
-- .env
-build:
-context: .
-dockerfile: ./docker/Dockerfile
-args:
-- APP_VERSION=v1.0.0-release
-- APP_HOST_PORT=${ENV_HTTP_PORT}
-- APP_USER=${ENV_DOCKER_USER}
-- APP_GROUP=${ENV_DOCKER_USER_GROUP}
-container_name: oullin_infra
-restart: always
-expose:
-- ${ENV_HTTP_PORT}
-networks:
-- oullin_net
+    deployment:
+        env_file:
+            - .env
+        build:
+            context: .
+            dockerfile: ./docker/Dockerfile
+            args:
+                - APP_VERSION=v1.0.0-release
+                - APP_HOST_PORT=${ENV_HTTP_PORT}
+                - APP_USER=${ENV_DOCKER_USER}
+                - APP_GROUP=${ENV_DOCKER_USER_GROUP}
+        container_name: oullin_infra
+        restart: always
+        networks:
+            - oullin_net
