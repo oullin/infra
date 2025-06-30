@@ -20,7 +20,7 @@ DOCKER_EXTRACTOR_NAME ?= oullin_infra_extractor
 
 # --- Phony Targets ---
 # Ensures these targets run even if files with the same name exist.
-.PHONY: fresh build build-linux build-mac run format watch clean clean-extractor
+.PHONY: fresh build-local build run format watch clean clean-extractor
 
 fresh:
 	docker compose down --remove-orphans && \
