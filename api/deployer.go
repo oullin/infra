@@ -52,9 +52,9 @@ func (d Deployment) Run() error {
 	)
 
 	makeArgs := []string{
-		//"-C",
-		//projectRoot,
-		"build-test", //"build:prod",
+		"-C",
+		projectRoot,
+		"build:prod", //"build-test"
 		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", d.dbSecretFile.dbUser),
 		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", d.dbSecretFile.dbPass),
 		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", d.dbSecretFile.dbName),
