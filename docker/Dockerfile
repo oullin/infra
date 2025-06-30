@@ -1,87 +1,91 @@
-# API Docker File.
-
-# --- Build Arguments for Configuration
-#     Defines variables that make this Dockerfile more configurable and reusable.
-#     These can be overridden during the build process (e.g., via docker-compose).
 ARG GO_VERSION=1.24
-ARG ALPINE_VERSION=latest
 
+# --- The builder image can be overridden. This allows to swap images for
+#     local compilations defaults to the lean Alpine image for production.
+ARG BUILDER_IMAGE=golang:${GO_VERSION}-alpine
+
+# The final image base.
+ARG FINAL_IMAGE=alpine:latest
+
+# Build-time variables for your application.
 ARG INFRA_VERSION="0.0.0.0"
 ARG BUILD_TAGS="infra,deployer,gus,oullin"
-
-ARG BINARY_NAME=infra
+ARG BINARY_NAME=deployment
 ARG INFRA_USER=infrauser
 ARG INFRA_GROUP=infragroup
+
+# --- Target OS and Architecture for cross-compilation.
+#     Defaults to a standard Linux build.
+ARG GOOS=linux
+ARG GOARCH=amd64
 
 # Derived arguments
 ARG INFRA_HOME=/home/${INFRA_USER}
 ARG BUILD_DIR=/app
-ARG LOGS_DIR=logs
 
-# --- Build Stage ---
-#     This stage, named 'builder', is responsible for compiling the Go application.
-#     It uses a Go-specific base image that includes the necessary toolchain.
-FROM golang:${GO_VERSION}-alpine AS builder
+# --- Build Stage
+#     This stage compiles the Go application.
+#     It uses the BUILDER_IMAGE argument, allowing for different build environments.
+FROM ${BUILDER_IMAGE} AS builder
 
-# Forwards build-time arguments into this specific stage so they can be referenced.
+# Forward arguments into this stage.
 ARG BUILD_DIR
 ARG BINARY_NAME
 ARG INFRA_VERSION
 ARG BUILD_TAGS
+ARG GOOS
+ARG GOARCH
 
-# Installs the timezone database package into the builder image.
-RUN apk add --no-cache tzdata
-
-# Sets the primary working directory for this stage of the build.
+# Sets the working directory.
 WORKDIR ${BUILD_DIR}
 
-# Copies the Go module definition files into the builder.
+# Copy and download dependencies first to leverage Docker layer caching.
 COPY ../go.mod go.sum ./
-
-# Downloads the application's external dependencies.
 RUN go mod download
 
-# Copies the rest of the application's source code into the builder.
+# Copy the rest of the application source code.
 COPY .. .
 
-# Compiles the Go application into a single, statically-linked binary.
-RUN CGO_ENABLED=0 go build -tags "${BUILD_TAGS}" -o ${BUILD_DIR}/${BINARY_NAME} -ldflags="-s -w -X main.Version=${INFRA_VERSION}" .
+# --- Compile the Go application.
+#     This now uses the GOOS and GOARCH args passed in.
+RUN GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 go build -tags "${BUILD_TAGS}" -o ${BUILD_DIR}/${BINARY_NAME} -ldflags="-s -w -X main.Version=${INFRA_VERSION}" .
 
 # --- Final Stage
-#     This is the final, production-ready stage of the build.
-#     It creates a minimal environment to hold the compiled artifact.
-FROM alpine:${ALPINE_VERSION}
+#     Forward arguments needed for the final stage.
+FROM ${FINAL_IMAGE}
 
-# Forwards build-time arguments into this final stage so they can be referenced.
 ARG INFRA_USER
 ARG INFRA_GROUP
 ARG INFRA_HOME
 ARG BINARY_NAME
 
-# Creates a dedicated, non-root user and group for the application.
+# Create a dedicated, non-root user and group.
 RUN addgroup -S ${INFRA_GROUP} && adduser -S ${INFRA_USER} -G ${INFRA_GROUP}
 
-# Sets the working directory for the final container.
+# Set the working directory.
 WORKDIR ${INFRA_HOME}
 
-# --- MODIFICATION: Create a /bin directory for the binary ---
+# Create a bin directory for the executable.
 RUN mkdir -p ${INFRA_HOME}/bin
 
-# Copies the compiled application binary from the 'builder' stage into the new /bin directory.
+# --- Copy the compiled binary from the builder stage using its explicit path.
+#     We know the path in the builder is /app, so we use it directly here.
 COPY --from=builder /app/${BINARY_NAME} ${INFRA_HOME}/bin/
 
-# Copies the timezone database from the 'builder' stage.
+# --- Copy required system data like timezone info.
+#     Note: ca-certificates might not exist on the builder if it's minimal (like alpine).
+#           This is safer when using different builders (like bookworm).
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
-# Copies the .env file into the container.
+# Copy the .env file.
 COPY .env .
 
-# Recursively sets the ownership of all files in the application's home directory.
+# Set ownership for the application user.
 RUN chown -R ${INFRA_USER}:${INFRA_GROUP} ${INFRA_HOME}
 
-# Switches the context of the container to run as the non-root user.
+# Switch to the non-root user.
 USER ${INFRA_USER}
 
-# --- Defines the default command to run the binary from the /bin folder.
-#     This will run if someone executes `docker run` on the image.
+# Define the default command to run when the container starts.
 CMD ["./bin/${BINARY_NAME}"]
