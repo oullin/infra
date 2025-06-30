@@ -1,3 +1,5 @@
-.idea
-
 .env
+
+.idea/
+.bin/
+!bin/.gitkeep
