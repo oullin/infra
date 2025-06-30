@@ -11,10 +11,10 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
             args:
-                - APP_VERSION=v1.0.0-release
-                - APP_HOST_PORT=${ENV_HTTP_PORT}
-                - APP_USER=${ENV_DOCKER_USER}
-                - APP_GROUP=${ENV_DOCKER_USER_GROUP}
+                - BINARY_NAME=${DOCKER_BINARY_NAME}
+                - INFRA_USER=${DOCKER_INFRA_USER}
+                - INFRA_GROUP=${DOCKER_INFRA_GROUP}
+                - INFRA_HOST_PORT=${DOCKER_INFRA_HOST_PORT}
         container_name: oullin_infra
         restart: always
         networks:

@@ -6,7 +6,7 @@
 ARG GO_VERSION=1.24
 ARG ALPINE_VERSION=latest
 
-ARG INFRA_VERSION="0.0.0-dev"
+ARG INFRA_VERSION="0.0.0.0"
 ARG BUILD_TAGS="infra,deployer,gus,oullin"
 
 ARG BINARY_NAME=infra
