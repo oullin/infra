@@ -36,6 +36,15 @@ ARG BUILD_TAGS
 ARG GOOS
 ARG GOARCH
 
+# --- Ensure tzdata and ca-certificates are installed in the builder.
+#     This works for both Alpine (apk) and Debian-based (apt) builders,
+#     making the build process more robust and portable.
+RUN if [ -f /etc/alpine-release ]; then \
+    apk add --no-cache tzdata ca-certificates; \
+else \
+    apt-get update && apt-get install -y tzdata ca-certificates; \
+fi
+
 # Sets the working directory.
 WORKDIR ${BUILD_DIR}
 
