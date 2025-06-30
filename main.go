@@ -19,13 +19,13 @@ func main() {
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
-	deployer := api.NewDeployment(validate, api.DeploymentRequest{
+	deployer, err := api.NewDeployment(validate, api.DeploymentRequest{
 		SecretsDir: os.Getenv("API_SECRETS_DIRECTORY"),
 		ProjectDir: os.Getenv("API_DIRECTORY"),
 	})
 
-	if err = deployer.Run(); err != nil {
-		log.Fatal("Error running the deployment:", err)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println(deployer)
