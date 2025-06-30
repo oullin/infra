@@ -26,11 +26,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := deployer.Run(); err != nil {
+	if err = deployer.Run(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(deployer)
+	fmt.Println("Deployment complete.")
 }
 
 func getValidator() *validator.Validate {
