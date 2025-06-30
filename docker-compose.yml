@@ -1,3 +1,8 @@
+# --- docker-compose.yml
+#     This file is configured primarily to build the Go application using a
+#     consistent Docker environment. The resulting binary can then be extracted
+#     from the built image to be used on a host machine (like a VPS).
+
 networks:
   oullin_net:
     name: oullin_net
@@ -5,17 +10,29 @@ networks:
 
 services:
     deployment:
+        # The .env file provides the values for the variables used in the 'args' section below.
         env_file:
             - .env
         build:
             context: .
             dockerfile: ./docker/Dockerfile
+
+            # --- These arguments are passed to the Dockerfile at BUILD TIME.
+            #     They allow me to customize the binary name and the user/group
+            #     that owns the files inside the image, directly from my .env file.
             args:
                 - BINARY_NAME=${DOCKER_BINARY_NAME}
                 - INFRA_USER=${DOCKER_INFRA_USER}
                 - INFRA_GROUP=${DOCKER_INFRA_GROUP}
-                - INFRA_HOST_PORT=${DOCKER_INFRA_HOST_PORT}
+
+        # Naming the container and the built image for easier reference.
         container_name: oullin_infra
-        restart: always
+        image: oullin/infra-builder
+
+        # --- While this service can be run, its primary value is the build artifact.
+        #     If we run it, it will simply execute the binary inside the container.
+        #     Set to "no" as we don't intend to run this as a long-running service.
+        restart: "no"
+
         networks:
             - oullin_net
