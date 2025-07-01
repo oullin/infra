@@ -57,6 +57,10 @@ jobs:
               if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
               run: tar -czvf deploy.tar.gz ${{ steps.find_binary.outputs.path }} Makefile
 
+            - name: Add VPS to Known Hosts
+              if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
+              run: ssh-keyscan -p ${{ secrets.VPS_SSH_PORT }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
             - name: Copy Binary and Makefile to VPS
               if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
               uses: appleboy/scp-action@v1.0.0
