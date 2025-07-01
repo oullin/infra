@@ -69,7 +69,11 @@ jobs:
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_PORT }}
                   script: |
-                      cd ${{ secrets.HOSTINGER_TARGET_DIR }}
-                      chmod +x ${{ secrets.DOCKER_BINARY_NAME }}
-                      sudo systemctl restart ${{ secrets.API_SUPERVISOR }}
-                      sudo systemctl status ${{ secrets.API_SUPERVISOR }}
+                    set -e
+                    cd ${{ secrets.HOSTINGER_TARGET_DIR }}
+                    SOURCE_FILENAME=$(basename "${{ steps.find_binary.outputs.path }}")
+                    FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
+                    mv -f "$SOURCE_FILENAME" "$FINAL_BINARY_NAME"
+                    chmod +x "$FINAL_BINARY_NAME"
+                    sudo systemctl restart ${{ secrets.API_SUPERVISOR }}
+                    sudo systemctl status ${{ secrets.API_SUPER-VISOR }}
