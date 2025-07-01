@@ -59,7 +59,7 @@ build: clean-extractor
 	cp $(ROOT_PATH)/.env $(ROOT_PATH)/bin/.env
 	docker compose build $(SERVICE_NAME)
 	docker create --name=$(DOCKER_EXTRACTOR_NAME) $(DOCKER_IMAGE_NAME)
-	docker cp $(DOCKER_EXTRACTOR_NAME):/home/$(DOCKER_INFRA_USER)/bin/$(BINARY_NAME) ./bin/$(BINARY_NAME)-linux-amd64
+	docker cp $(DOCKER_EXTRACTOR_NAME):/home/$(DOCKER_INFRA_USER)/bin/$(BINARY_NAME) ./bin/$(BINARY_NAME)
 	docker rm -f $(DOCKER_EXTRACTOR_NAME)
 	printf "\n\e[32mBinary created at:\e[0m \e[1;36m./bin/$(BINARY_NAME)\e[0m\n"
 
