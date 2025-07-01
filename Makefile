@@ -68,6 +68,15 @@ run: build
 	./bin/$(BINARY_NAME)
 
 # --- Supervisors
+# These targets manage the application's supervisor process on the remote server.
+#
+# IMPORTANT: Both 'sup-api-status' and 'sup-api-restart' invoke 'sudo supervisorctl'.
+# For automated deployments (e.g., via GitHub Actions), the SSH user provided
+# in the secrets must be configured for passwordless sudo for these specific commands.
+#
+# If this is not configured, any remote deployment will hang or fail.
+# This is typically done by adding a rule to the /etc/sudoers file using 'visudo'.
+
 sup-api-status:
 	@sudo supervisorctl status $(API_SUPERVISOR_NAME)
 
