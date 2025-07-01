@@ -1,12 +1,15 @@
+# --- .github/workflows/deploy.yml
+#     This GitHub Actions workflow automates the deployment of the Go application.
+#     It builds the application, then securely deploys the binary and Makefile
+#     to a remote VPS and restarts a given supervisor service.
+
 name: VPS
 
 on:
     push:
-        branches:
-            - main
+        branches: [main]
     pull_request:
-        branches:
-            - main
+        branches: [main]
 
 jobs:
     deployment:
@@ -51,6 +54,10 @@ jobs:
                   # Set the found path as an output for this step.
                   echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
 
+            - name: Prepare Deployment Package
+#              if: github.event_name == 'push'
+              run: tar -czvf deploy.tar.gz ${{ steps.find_binary.outputs.path }} Makefile
+
             - name: Copy binary and Makefile to VPS
               uses: appleboy/scp-action@v1.0.0
               with:
@@ -58,9 +65,7 @@ jobs:
                   username: ${{ secrets.HOSTINGER_USERNAME }}
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_SSH_PORT }}
-                  source: |
-                    "${{ steps.find_binary.outputs.path }}" # Use the path from the previous step's output
-                    Makefile
+                  source: "deploy.tar.gz"
                   target: "${{ secrets.HOSTINGER_TARGET_DIR }}/"
 
             - name: SSH and Restart Application
@@ -71,17 +76,30 @@ jobs:
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_SSH_PORT }}
                   script: |
-                    set -e # Exit immediately if a command exits with a non-zero status.
+                        set -e # Exit immediately if a command fails.
+                        echo "--- Changing to directory: ${{ secrets.HOSTINGER_TARGET_DIR }}"
+                        cd ${{ secrets.HOSTINGER_TARGET_DIR }}
 
-                    cd ${{ secrets.HOSTINGER_TARGET_DIR }}
-                    ls -la
+                        echo "--- Unpacking deployment package ---"
+                        tar -xzvf deploy.tar.gz
+                        rm deploy.tar.gz
 
-                    SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
-                    FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
+                        # The binary is now in a 'bin' subdirectory created by tar.
+                        SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
+                        FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
 
-                    mv -f "$SOURCE_FILENAME_ON_SERVER" "./$FINAL_BINARY_NAME"
-                    rm -rf ./bin
-                    chmod +x "$FINAL_BINARY_NAME"
+                        echo "--- Moving '$SOURCE_FILENAME_ON_SERVER' to './$FINAL_BINARY_NAME'"
+                        mv -f "$SOURCE_FILENAME_ON_SERVER" "./$FINAL_BINARY_NAME"
 
-                    make sup-api-restart API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}
-                    make sup-api-status API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}
+                        echo "--- Cleaning up empty 'bin' directory"
+                        rm -rf ./bin
+
+                        echo "--- Making '$FINAL_BINARY_NAME' executable"
+                        chmod +x "$FINAL_BINARY_NAME"
+
+                        echo "--- Restarting service via Makefile"
+                        make sup-api-restart API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}
+
+                        echo "--- Checking service status via Makefile"
+                        make sup-api-status API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}
+
