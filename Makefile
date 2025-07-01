@@ -16,10 +16,11 @@ SERVICE_NAME          ?= deployment
 DOCKER_INFRA_USER     ?= infrauser
 DOCKER_INFRA_GROUP    ?= infragroup
 DOCKER_EXTRACTOR_NAME ?= oullin_infra_extractor
+API_SUPERVISOR_NAME   ?= oullin-sup
 
 # --- Phony Targets ---
 # Ensures these targets run even if files with the same name exist.
-.PHONY: fresh build-local build run format watch clean clean-extractor build-test
+.PHONY: fresh build-local build run format watch clean clean-extractor build-test sup-api-status sup-api-restart
 
 fresh:
 	make clean && make clean-extractor && \
@@ -65,6 +66,15 @@ build: clean-extractor
 
 run: build
 	./bin/$(BINARY_NAME)
+
+# --- Supervisors
+sup-api-status:
+	@sudo supervisorctl status $(API_SUPERVISOR_NAME)
+
+sup-api-restart:
+	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
+
+# --- Miscellanious
 
 format:
 	gofmt -w -s .
