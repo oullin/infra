@@ -1,4 +1,4 @@
-name: Deploy to Hostinger VPS
+name: Deploy to VPS
 
 on:
     push:
@@ -23,7 +23,7 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Build with Docker Compose
+            - name: Build with Makefile
               run: |
                   touch .env
                   make build
@@ -33,13 +33,7 @@ jobs:
                   DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
                   DOCKER_INFRA_GROUP: ${{ secrets.DOCKER_INFRA_GROUP }}
 
-            - name: Extract Binary from Image
-              run: |
-                  docker create --name temp_container oullin/infra-builder
-                  docker cp temp_container:/app/bin/${{ secrets.BINARY_NAME }} .
-                  docker rm temp_container
-
-            - name: Copy binary to Hostinger VPS
+            - name: Copy binary to VPS
               uses: appleboy/scp-action@v1.0.0
               with:
                   host: ${{ secrets.HOSTINGER_HOST }}
@@ -47,7 +41,7 @@ jobs:
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_PORT }}
                   source: "${{ secrets.BINARY_NAME }}"
-                  target: "${{ secrets.HOSTINGER_TARGET_DIR }}/" # Target directory on the VPS
+                  target: "${{ secrets.HOSTINGER_TARGET_DIR }}/"
 
             - name: SSH and Restart Application
               uses: appleboy/ssh-action@v1.0.0
