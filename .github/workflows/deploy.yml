@@ -44,7 +44,7 @@ jobs:
                   username: ${{ secrets.HOSTINGER_USERNAME }}
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_PORT }}
-                  source: "${{ secrets.BINARY_NAME }}"
+                  source: "${{ secrets.DOCKER_BINARY_NAME }}"
                   target: "${{ secrets.HOSTINGER_TARGET_DIR }}/"
 
             - name: SSH and Restart Application
