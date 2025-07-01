@@ -43,8 +43,8 @@ jobs:
                   host: ${{ secrets.HOSTINGER_HOST }}
                   username: ${{ secrets.HOSTINGER_USERNAME }}
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
-                  port: ${{ secrets.HOSTINGER_PORT }}
-                  source: "${{ secrets.DOCKER_BINARY_NAME }}"
+                  port: ${{ secrets.HOSTINGER_SSH_PORT }}
+                  source: "${{ steps.find_binary.outputs.path }}" # Use the path from the previous step's output
                   target: "${{ secrets.HOSTINGER_TARGET_DIR }}/"
 
             - name: SSH and Restart Application
