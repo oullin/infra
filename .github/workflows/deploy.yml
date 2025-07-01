@@ -12,7 +12,7 @@ jobs:
     build-and-deploy:
         strategy:
             matrix:
-                os: [ubuntu-22.04]
+                os: [ubuntu-24.04]
 
         runs-on: ${{ matrix.os }}
 
@@ -24,7 +24,10 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Build with Docker Compose
-              run: make build
+              run: |
+                  touch .env
+                  make build
+
               env:
                   DOCKER_BINARY_NAME: ${{ secrets.DOCKER_BINARY_NAME }}
                   DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
