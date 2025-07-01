@@ -77,6 +77,7 @@ jobs:
                   port: ${{ secrets.HOSTINGER_SSH_PORT }}
                   script: |
                         set -e # Exit immediately if a command fails.
+                        touch .env
                         echo "--- Changing to directory: ${{ secrets.HOSTINGER_TARGET_DIR }}"
                         cd ${{ secrets.HOSTINGER_TARGET_DIR }}
 
