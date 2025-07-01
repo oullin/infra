@@ -27,9 +27,7 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Build with Makefile
-              run: |
-                  touch .env
-                  make build
+              run: make build
               env:
                   DOCKER_BINARY_NAME: ${{ secrets.DOCKER_BINARY_NAME }}
                   DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
@@ -85,7 +83,6 @@ jobs:
                         rm deploy.tar.gz
 
                         # The binary is now in a 'bin' subdirectory created by tar.
-                        touch ./bin/.env
                         SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
                         FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
 
