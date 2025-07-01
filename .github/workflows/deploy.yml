@@ -91,7 +91,7 @@ jobs:
                     chmod +x "$FINAL_BINARY_NAME"
 
                     echo "--- Restarting service: ${{ secrets.API_SUPERVISOR }}"
-                    sudo systemctl restart ${{ secrets.API_SUPERVISOR }}
+                    sudo supervisorctl restart ${{ secrets.API_SUPERVISOR }}
 
                     echo "--- Checking service status"
-                    sudo systemctl status ${{ secrets.API_SUPERVISOR }}
+                    sudo supervisorctl status ${{ secrets.API_SUPERVISOR }}
