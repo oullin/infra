@@ -3,7 +3,7 @@
 # --- Configuration ---
 # Include variables from .env file for configuration. This makes variables
 # like DOCKER_INFRA_USER available to Make commands.
-include .env
+-include .env
 export
 
 # Define primary variables.
