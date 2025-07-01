@@ -1,0 +1,106 @@
+# --- .github/workflows/deploy.yml
+#     This GitHub Actions workflow automates the deployment of the Go application.
+#     It builds the application, then securely deploys the binary and Makefile
+#     to a remote VPS and restarts a given supervisor service.
+
+name: VPS
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    deployment:
+        strategy:
+            matrix:
+                os: [ubuntu-24.04]
+
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Set up Docker with Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build with Makefile
+              run: |
+                  touch .env
+                  make build
+              env:
+                  DOCKER_BINARY_NAME: ${{ secrets.VPS_BINARY_NAME }}
+                  DOCKER_INFRA_USER: ${{ secrets.VPS_INFRA_USER }}
+                  DOCKER_INFRA_GROUP: ${{ secrets.VPS_INFRA_GROUP }}
+
+            - name: Find and Verify Built Artifact
+              id: find_binary # Give the step an ID to reference its outputs
+              run: |
+                  ls -la ./bin
+                  # Find the executable file, excluding .gitkeep, and handle cases where no file or multiple files are found.
+                  BINARY_PATH=$(find ./bin -type f -executable -not -name ".gitkeep")
+
+                  if [ -z "$BINARY_PATH" ]; then
+                    echo "::error::No executable binary found in ./bin directory."
+                    exit 1
+                  elif [ $(echo "$BINARY_PATH" | wc -l) -ne 1 ]; then
+                    echo "::error::Multiple executable binaries found in ./bin directory. Please ensure only one exists."
+                    echo "$BINARY_PATH"
+                    exit 1
+                  fi
+
+                  echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
+
+            - name: Prepare Deployment Package
+              if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
+              run: tar -czvf deploy.tar.gz ${{ steps.find_binary.outputs.path }} Makefile
+
+            - name: Add VPS to Known Hosts
+              if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -p ${{ secrets.VPS_SSH_PORT }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Copy Binary and Makefile to VPS
+              if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
+              uses: appleboy/scp-action@v1.0.0
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USERNAME }}
+                  key: ${{ secrets.VPS_SSH_KEY }}
+                  port: ${{ secrets.VPS_SSH_PORT }}
+                  source: "deploy.tar.gz"
+                  target: "${{ secrets.VPS_TARGET_DIR }}/"
+
+            - name: SSH and Restart Services
+              if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test')) }}
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.VPS_HOST }}
+                  username: ${{ secrets.VPS_USERNAME }}
+                  key: ${{ secrets.VPS_SSH_KEY }}
+                  port: ${{ secrets.VPS_SSH_PORT }}
+                  script: |
+                    set -e # Exit immediately if a command fails.
+                    echo "--- Changing to directory: ${{ secrets.VPS_TARGET_DIR }}"
+                    cd ${{ secrets.VPS_TARGET_DIR }}
+
+                    echo "--- Unpacking deployment package ---"
+                    tar -xzvf deploy.tar.gz
+                    rm deploy.tar.gz
+
+                    echo "--- Moving '$SOURCE_FILENAME_ON_SERVER' to './$FINAL_BINARY_NAME'"
+                    SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
+                    FINAL_BINARY_NAME="${{ secrets.VPS_BINARY_NAME }}"
+
+                    mv -f "$SOURCE_FILENAME_ON_SERVER" "./$FINAL_BINARY_NAME"
+                    rm -rf ./bin
+                    echo "--- Making '$FINAL_BINARY_NAME' executable"
+                    chmod +x "$FINAL_BINARY_NAME"
+
+                    echo "--- Restarting service via Makefile"
+                    make sup-api-restart API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}
+                    echo "--- Checking service status via Makefile"
+                    make sup-api-status API_SUPERVISOR_NAME=${{ secrets.API_SUPERVISOR }}

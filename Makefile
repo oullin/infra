@@ -3,7 +3,7 @@
 # --- Configuration ---
 # Include variables from .env file for configuration. This makes variables
 # like DOCKER_INFRA_USER available to Make commands.
-include .env
+-include .env
 export
 
 # Define primary variables.
@@ -16,10 +16,11 @@ SERVICE_NAME          ?= deployment
 DOCKER_INFRA_USER     ?= infrauser
 DOCKER_INFRA_GROUP    ?= infragroup
 DOCKER_EXTRACTOR_NAME ?= oullin_infra_extractor
+API_SUPERVISOR_NAME   ?= oullin-sup
 
 # --- Phony Targets ---
 # Ensures these targets run even if files with the same name exist.
-.PHONY: fresh build-local build run format watch clean clean-extractor build-test
+.PHONY: fresh build-local build run format watch clean clean-extractor build-test sup-api-status sup-api-restart
 
 fresh:
 	make clean && make clean-extractor && \
@@ -59,12 +60,30 @@ build: clean-extractor
 	cp $(ROOT_PATH)/.env $(ROOT_PATH)/bin/.env
 	docker compose build $(SERVICE_NAME)
 	docker create --name=$(DOCKER_EXTRACTOR_NAME) $(DOCKER_IMAGE_NAME)
-	docker cp $(DOCKER_EXTRACTOR_NAME):/home/$(DOCKER_INFRA_USER)/bin/$(BINARY_NAME) ./bin/$(BINARY_NAME)-linux-amd64
+	docker cp $(DOCKER_EXTRACTOR_NAME):/home/$(DOCKER_INFRA_USER)/bin/$(BINARY_NAME) ./bin/$(BINARY_NAME)
 	docker rm -f $(DOCKER_EXTRACTOR_NAME)
 	printf "\n\e[32mBinary created at:\e[0m \e[1;36m./bin/$(BINARY_NAME)\e[0m\n"
 
 run: build
 	./bin/$(BINARY_NAME)
+
+# --- Supervisors
+# These targets manage the application's supervisor process on the remote server.
+#
+# IMPORTANT: Both 'sup-api-status' and 'sup-api-restart' invoke 'sudo supervisorctl'.
+# For automated deployments (e.g., via GitHub Actions), the SSH user provided
+# in the secrets must be configured for passwordless sudo for these specific commands.
+#
+# If this is not configured, any remote deployment will hang or fail.
+# This is typically done by adding a rule to the /etc/sudoers file using 'visudo'.
+
+sup-api-status:
+	@sudo supervisorctl status $(API_SUPERVISOR_NAME)
+
+sup-api-restart:
+	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
+
+# --- Miscellanious
 
 format:
 	gofmt -w -s .
