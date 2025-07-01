@@ -9,7 +9,7 @@ on:
             - main
 
 jobs:
-    build-and-deploy:
+    deployment:
         strategy:
             matrix:
                 os: [ubuntu-24.04]
@@ -32,10 +32,24 @@ jobs:
                   DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
                   DOCKER_INFRA_GROUP: ${{ secrets.DOCKER_INFRA_GROUP }}
 
-            - name: Verify Built Artifact
+            - name: Find and Verify Build Artifact
+              id: find_binary # Give the step an ID to reference its outputs
               run: |
                   echo "Listing contents of the ./bin directory to verify the artifact:"
                   ls -la ./bin
+                  # Find the executable file, excluding .gitkeep, and handle cases where no file or multiple files are found.
+                  BINARY_PATH=$(find ./bin -type f -executable -not -name ".gitkeep")
+                  if [ -z "$BINARY_PATH" ]; then
+                    echo "::error::No executable binary found in ./bin directory."
+                    exit 1
+                  elif [ $(echo "$BINARY_PATH" | wc -l) -ne 1 ]; then
+                    echo "::error::Multiple executable binaries found in ./bin directory. Please ensure only one exists."
+                    echo "$BINARY_PATH"
+                    exit 1
+                  fi
+                  echo "Found binary: $BINARY_PATH"
+                  # Set the found path as an output for this step.
+                  echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
 
             - name: Copy binary to VPS
               uses: appleboy/scp-action@v1.0.0
