@@ -31,9 +31,9 @@ jobs:
                   touch .env
                   make build
               env:
-                  DOCKER_BINARY_NAME: ${{ secrets.DOCKER_BINARY_NAME }}
-                  DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
-                  DOCKER_INFRA_GROUP: ${{ secrets.DOCKER_INFRA_GROUP }}
+                  DOCKER_BINARY_NAME: ${{ secrets.VPS_BINARY_NAME }}
+                  DOCKER_INFRA_USER: ${{ secrets.VPS_INFRA_USER }}
+                  DOCKER_INFRA_GROUP: ${{ secrets.VPS_INFRA_GROUP }}
 
             - name: Find and Verify Built Artifact
               id: find_binary # Give the step an ID to reference its outputs
@@ -87,7 +87,7 @@ jobs:
 
                     echo "--- Moving '$SOURCE_FILENAME_ON_SERVER' to './$FINAL_BINARY_NAME'"
                     SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
-                    FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
+                    FINAL_BINARY_NAME="${{ secrets.VPS_BINARY_NAME }}"
 
                     mv -f "$SOURCE_FILENAME_ON_SERVER" "./$FINAL_BINARY_NAME"
                     rm -rf ./bin
