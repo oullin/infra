@@ -27,11 +27,15 @@ jobs:
               run: |
                   touch .env
                   make build
-
               env:
                   DOCKER_BINARY_NAME: ${{ secrets.DOCKER_BINARY_NAME }}
                   DOCKER_INFRA_USER: ${{ secrets.DOCKER_INFRA_USER }}
                   DOCKER_INFRA_GROUP: ${{ secrets.DOCKER_INFRA_GROUP }}
+
+            - name: Verify Built Artifact
+              run: |
+                  echo "Listing contents of the ./bin directory to verify the artifact:"
+                  ls -la ./bin
 
             - name: Copy binary to VPS
               uses: appleboy/scp-action@v1.0.0
