@@ -77,7 +77,6 @@ jobs:
                   port: ${{ secrets.HOSTINGER_SSH_PORT }}
                   script: |
                         set -e # Exit immediately if a command fails.
-                        touch .env
                         echo "--- Changing to directory: ${{ secrets.HOSTINGER_TARGET_DIR }}"
                         cd ${{ secrets.HOSTINGER_TARGET_DIR }}
 
@@ -86,6 +85,7 @@ jobs:
                         rm deploy.tar.gz
 
                         # The binary is now in a 'bin' subdirectory created by tar.
+                        touch ./bin/.env
                         SOURCE_FILENAME_ON_SERVER="./bin/$(basename "${{ steps.find_binary.outputs.path }}")"
                         FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
 
