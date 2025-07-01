@@ -51,14 +51,16 @@ jobs:
                   # Set the found path as an output for this step.
                   echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
 
-            - name: Copy binary to VPS
+            - name: Copy binary and Makefile to VPS
               uses: appleboy/scp-action@v1.0.0
               with:
                   host: ${{ secrets.HOSTINGER_HOST }}
                   username: ${{ secrets.HOSTINGER_USERNAME }}
                   key: ${{ secrets.HOSTINGER_SSH_KEY }}
                   port: ${{ secrets.HOSTINGER_SSH_PORT }}
-                  source: "${{ steps.find_binary.outputs.path }}" # Use the path from the previous step's output
+                  source: |
+                    "${{ steps.find_binary.outputs.path }}" # Use the path from the previous step's output
+                    Makefile
                   target: "${{ secrets.HOSTINGER_TARGET_DIR }}/"
 
             - name: SSH and Restart Application
