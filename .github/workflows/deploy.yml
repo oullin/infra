@@ -71,6 +71,7 @@ jobs:
                   script: |
                     set -e
                     cd ${{ secrets.HOSTINGER_TARGET_DIR }}
+                    ls -la
                     SOURCE_FILENAME=$(basename "${{ steps.find_binary.outputs.path }}")
                     FINAL_BINARY_NAME="${{ secrets.DOCKER_BINARY_NAME }}"
                     mv -f "$SOURCE_FILENAME" "$FINAL_BINARY_NAME"
