@@ -54,7 +54,6 @@ jobs:
                   echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
 
             - name: Prepare Deployment Package
-#              if: github.event_name == 'push'
               run: tar -czvf deploy.tar.gz ${{ steps.find_binary.outputs.path }} Makefile
 
             - name: Copy Binary and Makefile to VPS
