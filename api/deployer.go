@@ -14,6 +14,9 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 		return nil, fmt.Errorf("invalid deployment request [%#v]: %v", request, err)
 	}
 
+	fmt.Printf("\n\n ---> Init: ProjectDir: %#v", request.ProjectDir)
+	fmt.Printf("\n ---> Init: SecretsDir: %#v\n\n", request.SecretsDir)
+
 	projectDir := pkg.Trim(request.ProjectDir)
 	secretsDir := pkg.Trim(request.SecretsDir)
 
@@ -47,9 +50,8 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 }
 
 func (d Deployment) Run() error {
-	projectRoot := pkg.Trim(
-		filepath.Base(d.projectDir),
-	)
+	projectRoot := pkg.Trim(d.projectDir)
+	fmt.Printf("\n ---> Run: Root directory: %#v\n", projectRoot)
 
 	makeArgs := []string{
 		"-C",
@@ -62,6 +64,8 @@ func (d Deployment) Run() error {
 		fmt.Sprintf("ENV_DB_USER_PASSWORD=%s", d.dbSecrets.dbPass),
 		fmt.Sprintf("ENV_DB_DATABASE_NAME=%s", d.dbSecrets.dbName),
 	}
+
+	fmt.Printf("\n ---> Run: makeArgs: %#v\n", makeArgs)
 
 	cmd := exec.Command("make", makeArgs...)
 
