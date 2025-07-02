@@ -50,9 +50,7 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 }
 
 func (d Deployment) Run() error {
-    projectRoot := pkg.Trim(
-        filepath.Base(d.projectDir),
-    )
+    projectRoot := pkg.Trim(d.projectDir)
 
     makeArgs := []string{
         "-C",
