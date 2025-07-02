@@ -14,8 +14,8 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 		return nil, fmt.Errorf("invalid deployment request [%#v]: %v", request, err)
 	}
 
-	fmt.Println("ProjectDir:", request.ProjectDir)
-	fmt.Println("SecretsDir:", request.SecretsDir)
+	fmt.Printf("\n\n ---> Init: ProjectDir: %#v", request.ProjectDir)
+	fmt.Printf("\n ---> Init: SecretsDir: %#v\n\n", request.SecretsDir)
 
 	projectDir := pkg.Trim(request.ProjectDir)
 	secretsDir := pkg.Trim(request.SecretsDir)
