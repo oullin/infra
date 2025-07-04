@@ -29,10 +29,11 @@ DOCKER_INFRA_GROUP    ?= infragroup
 DOCKER_EXTRACTOR_NAME ?= oullin_infra_extractor
 API_SUPERVISOR_NAME   ?= oullin-sup
 
-# --- Phony Targets ---
-# Ensures these targets run even if files with the same name exist.
-.PHONY: fresh build-local build run format watch clean clean-extractor build-test sup-api-status sup-api-restart
-.PHONY: ufw-setup ufw-status
+.PHONY: all test \
+		fresh build-local build run format watch \
+		clean clean-extractor build-test \
+		sup-api-status sup-api-restart \
+		ufw-setup ufw-status
 
 fresh:
 	make clean && make clean-extractor && \
@@ -96,9 +97,9 @@ sup-api-restart:
 	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
 
 # --- Firewall (UFW)
-ufw-setup: # -- this commands needs sudo: sudo make ufw-setup
-	@chmod +x $(ROOT_PATH)/scripts/firewall.sh
-	$(ROOT_PATH)/scripts/firewall.sh
+ufw-setup:
+	@sudo chmod +x $(ROOT_PATH)/scripts/firewall.sh
+	@sudo $(ROOT_PATH)/scripts/firewall.sh
 	@printf "$(GREEN)Firewall properly activated.$(NC)\n"
 
 ufw-status:
@@ -114,7 +115,7 @@ watch:
 	air
 
 clean:
-	@find ./bin -mindepth 1 ! -name '.gitkeep' -delete
+	@find $(ROOT_PATH)/bin -mindepth 1 ! -name '.gitkeep' -delete
 
 clean-extractor:
 	@docker rm -f $(DOCKER_EXTRACTOR_NAME) || true
