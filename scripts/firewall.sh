@@ -1,19 +1,26 @@
 #!/bin/bash
 
-set -e
+# Exit on error, undefined variable, or pipeline failure
+set -euo pipefail
+
+# Abort if not running as root
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root. Please use 'sudo'." >&2
+  exit 1
+fi
 
 # --- Set default policies
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
+ufw default deny incoming
+ufw default allow outgoing
 
 # --- Allow essential services
-sudo ufw allow OpenSSH
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw allow 443/udp
+ufw allow OpenSSH
+ufw allow http
+ufw allow https
+ufw allow 443/udp
 
 # --- Enable the firewall and automatically answer "yes" to the prompt
-yes | sudo ufw enable
+ufw --force enable
 
 # --- Display the final UFW status
-sudo ufw status verbose
+ufw status verbose

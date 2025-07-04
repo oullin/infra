@@ -96,7 +96,7 @@ sup-api-restart:
 	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
 
 # --- Firewall (UFW)
-ufw-setup:
+ufw-setup: # -- this commands needs sudo: sudo make ufw-setup
 	@chmod +x $(ROOT_PATH)/scripts/firewall.sh
 	$(ROOT_PATH)/scripts/firewall.sh
 	@printf "$(GREEN)Firewall properly activated.$(NC)\n"
