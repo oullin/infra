@@ -6,6 +6,17 @@
 -include .env
 export
 
+# --- Colours
+NC     := \033[0m
+BOLD   := \033[1m
+CYAN   := \033[36m
+WHITE  := \033[37m
+GREEN  := \033[0;32m
+BLUE   := \033[0;34m
+RED    := \033[0;31m
+YELLOW := \033[1;33m
+# -----------
+
 # Define primary variables.
 # This ensures that the binary name is consistent across all commands.
 ROOT_PATH             ?= $(shell pwd)
@@ -21,6 +32,7 @@ API_SUPERVISOR_NAME   ?= oullin-sup
 # --- Phony Targets ---
 # Ensures these targets run even if files with the same name exist.
 .PHONY: fresh build-local build run format watch clean clean-extractor build-test sup-api-status sup-api-restart
+.PHONY: ufw-setup ufw-status
 
 fresh:
 	make clean && make clean-extractor && \
@@ -83,8 +95,16 @@ sup-api-status:
 sup-api-restart:
 	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
 
-# --- Miscellanious
+# --- Firewall (UFW)
+ufw-setup:
+	@chmod +x $(ROOT_PATH)/scripts/firewall.sh
+	$(ROOT_PATH)/scripts/firewall.sh
+	@printf "$(GREEN)Firewall properly activated.$(NC)\n"
 
+ufw-status:
+	@sudo ufw status verbose
+
+# --- Miscellanious
 format:
 	gofmt -w -s .
 
@@ -98,7 +118,6 @@ clean:
 
 clean-extractor:
 	@docker rm -f $(DOCKER_EXTRACTOR_NAME) || true
-
 
 # ---- Test Commands
 build-test:
