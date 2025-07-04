@@ -35,6 +35,11 @@ API_SUPERVISOR_NAME   ?= oullin-sup
 		sup-api-status sup-api-restart \
 		ufw-setup ufw-status
 
+# --- Conventional entry points
+all: build
+test: build-test
+#---
+
 fresh:
 	make clean && make clean-extractor && \
 	docker compose down --remove-orphans && \
@@ -105,7 +110,7 @@ ufw-setup:
 ufw-status:
 	@sudo ufw status verbose
 
-# --- Miscellanious
+# --- Miscellaneous
 format:
 	gofmt -w -s .
 
