@@ -6,6 +6,17 @@
 -include .env
 export
 
+# --- Colours
+NC     := \033[0m
+BOLD   := \033[1m
+CYAN   := \033[36m
+WHITE  := \033[37m
+GREEN  := \033[0;32m
+BLUE   := \033[0;34m
+RED    := \033[0;31m
+YELLOW := \033[1;33m
+# -----------
+
 # Define primary variables.
 # This ensures that the binary name is consistent across all commands.
 ROOT_PATH             ?= $(shell pwd)
@@ -18,9 +29,16 @@ DOCKER_INFRA_GROUP    ?= infragroup
 DOCKER_EXTRACTOR_NAME ?= oullin_infra_extractor
 API_SUPERVISOR_NAME   ?= oullin-sup
 
-# --- Phony Targets ---
-# Ensures these targets run even if files with the same name exist.
-.PHONY: fresh build-local build run format watch clean clean-extractor build-test sup-api-status sup-api-restart
+.PHONY: all test \
+		fresh build-local build run format watch \
+		clean clean-extractor build-test \
+		sup-api-status sup-api-restart \
+		ufw-setup ufw-status
+
+# --- Conventional entry points
+all: build
+test: build-test
+#---
 
 fresh:
 	make clean && make clean-extractor && \
@@ -83,8 +101,16 @@ sup-api-status:
 sup-api-restart:
 	@sudo supervisorctl restart $(API_SUPERVISOR_NAME)
 
-# --- Miscellanious
+# --- Firewall (UFW)
+ufw-setup:
+	@sudo chmod +x $(ROOT_PATH)/scripts/firewall.sh
+	@sudo $(ROOT_PATH)/scripts/firewall.sh
+	@printf "$(GREEN)Firewall properly activated.$(NC)\n"
 
+ufw-status:
+	@sudo ufw status verbose
+
+# --- Miscellaneous
 format:
 	gofmt -w -s .
 
@@ -94,11 +120,10 @@ watch:
 	air
 
 clean:
-	@find ./bin -mindepth 1 ! -name '.gitkeep' -delete
+	@find $(ROOT_PATH)/bin -mindepth 1 ! -name '.gitkeep' -delete
 
 clean-extractor:
 	@docker rm -f $(DOCKER_EXTRACTOR_NAME) || true
-
 
 # ---- Test Commands
 build-test:
