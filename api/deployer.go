@@ -16,7 +16,7 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 
 	fmt.Printf("\n ---> Init: ProjectDir: %#v", request.ProjectDir)
 	fmt.Printf("\n ---> Init: SecretsDir: %#v", request.SecretsDir)
-	fmt.Printf("\n ---> Init: CaddyLogsPath: %#v", request.CaddyLogsDir)
+	fmt.Printf("\n ---> Init: CaddyLogsDir: %#v", request.CaddyLogsDir)
 
 	projectDir := pkg.Trim(request.ProjectDir)
 	secretsDir := pkg.Trim(request.SecretsDir)
