@@ -1,7 +1,9 @@
-# Oullin Infrastructure
+# Infrastructure
 
 This project is designed to streamline the deployment of the Oullin's applications by leveraging Docker and Make for a
-consistent and automated build and deployment process. The infrastructure is set up to handle servers, certificates, and documentation.
+consistent and automated build and deployment process.
+
+The infrastructure is set up to handle servers, database, SSL, certificates, and documentation.
 
 ## License
 
