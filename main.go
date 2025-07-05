@@ -18,8 +18,9 @@ func main() {
 	}
 
 	deployer, err := api.NewDeployment(getValidator(), api.DeploymentRequest{
-		SecretsDir: os.Getenv("API_SECRETS_DIRECTORY"),
-		ProjectDir: os.Getenv("API_DIRECTORY"),
+		SecretsDir:   os.Getenv("API_SECRETS_DIRECTORY"),
+		ProjectDir:   os.Getenv("API_DIRECTORY"),
+		CaddyLogsDir: os.Getenv("CADDY_LOGS_DIRECTORY"),
 	})
 
 	if err != nil {
@@ -30,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Deployment complete.")
+	fmt.Println("Deployment completed.")
 }
 
 func getValidator() *validator.Validate {

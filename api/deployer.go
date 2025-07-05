@@ -14,8 +14,9 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 		return nil, fmt.Errorf("invalid deployment request [%#v]: %v", request, err)
 	}
 
-	fmt.Printf("\n\n ---> Init: ProjectDir: %#v", request.ProjectDir)
-	fmt.Printf("\n ---> Init: SecretsDir: %#v\n\n", request.SecretsDir)
+	fmt.Printf("\n ---> Init: ProjectDir: %#v", request.ProjectDir)
+	fmt.Printf("\n ---> Init: SecretsDir: %#v", request.SecretsDir)
+	fmt.Printf("\n ---> Init: CaddyLogsDir: %#v", request.CaddyLogsDir)
 
 	projectDir := pkg.Trim(request.ProjectDir)
 	secretsDir := pkg.Trim(request.SecretsDir)
@@ -38,6 +39,7 @@ func NewDeployment(validator *validator.Validate, request DeploymentRequest) (*D
 	deployment := Deployment{
 		projectDir:   projectDir,
 		secretsDir:   secretsDir,
+		caddyLogsDir: pkg.Trim(request.CaddyLogsDir),
 		dbSecrets:    dbSecrets,
 		dbSecretFile: dbSecretFiles,
 	}
@@ -56,13 +58,14 @@ func (d Deployment) Run() error {
 	makeArgs := []string{
 		"-C",
 		projectRoot,
-		"build:prod", //"build-test"
+		"build:prod",
 		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", d.dbSecretFile.dbUser),
 		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", d.dbSecretFile.dbPass),
 		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", d.dbSecretFile.dbName),
 		fmt.Sprintf("ENV_DB_USER_NAME=%s", d.dbSecrets.dbUser),
 		fmt.Sprintf("ENV_DB_USER_PASSWORD=%s", d.dbSecrets.dbPass),
 		fmt.Sprintf("ENV_DB_DATABASE_NAME=%s", d.dbSecrets.dbName),
+		fmt.Sprintf("CADDY_LOGS_PATH=%s", d.caddyLogsDir),
 	}
 
 	fmt.Printf("\n ---> Run: makeArgs: %#v\n", makeArgs)
