@@ -1,0 +1,5 @@
+database:
+    secrets:
+        pg_dbname: /storage/db/secrets/pg_dbname
+        pg_username: /storage/db/secrets/pg_username
+        pg_password: /storage/db/secrets/pg_password

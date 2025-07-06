@@ -1,45 +1,25 @@
 package api
 
-const dbNameFileName = "postgres_db"
-const dbUserNameFileName = "postgres_user"
-const dbPasswordFileName = "postgres_password"
+import "github.com/spf13/viper"
 
-type DeploymentScript struct {
-	CredentialsFile string `validate:"required"`
-	FileName        string `validate:"required"`
-	Extension       string `validate:"required"`
-}
-
-//----- OLD
+const DeployCommand = "make build:deploy"
 
 type DeploymentRequest struct {
-	SecretsDir         string `validate:"required"`
-	ProjectDir         string `validate:"required"`
-	CaddyLogsDir       string `validate:"required"`
-	ApiCredentialsFile string `validate:"required"`
+    ConfigFileName string
+    ConfigFilePath string
+    Command        string
 }
 
 type Deployment struct {
-	secretsDir   string        `validate:"required"`
-	projectDir   string        `validate:"required"`
-	caddyLogsDir string        `validate:"required"`
-	dbSecrets    DbSecrets     `validate:"required"`
-	dbSecretFile DbSecretFiles `validate:"required"`
+    Viper     *viper.Viper
+    DBSecrets DBSecrets
 }
 
-type DbSecrets struct {
-	dbUser string
-	dbName string
-	dbPass string
-}
-
-type DbSecretFiles struct {
-	dbUser string
-	dbName string
-	dbPass string
-}
-
-type Commands struct {
-	signature string
-	directory string
+type DBSecrets struct {
+    DbName       string `validate:"required"`
+    DbNameFile   string `validate:"required"`
+    UserName     string `validate:"required"`
+    UserNameFile string `validate:"required"`
+    Password     string `validate:"required"`
+    PasswordFile string `validate:"required"`
 }
