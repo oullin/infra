@@ -1,0 +1,5 @@
+database:
+    secrets:
+        dbname: /home/gocanto/.oullin/secrets/pg_dbname
+        username: /home/gocanto/.oullin/secrets/pg_username
+        password: /home/gocanto/.oullin/secrets/pg_password
