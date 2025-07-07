@@ -10,34 +10,34 @@ import (
 	"os"
 )
 
-func main() {
-	var err error
+var validate *validator.Validate
 
-	if err = godotenv.Load(); err != nil {
+func init() {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
 
-	var ApiDeployment api.Deployment
+	validate = validator.New(
+		validator.WithRequiredStructEnabled(),
+	)
+}
 
-	ApiDeployment, err = api.NewDeployment(api.DeploymentRequest{
-		Command:        api.DeployCommand,
-		ConfigFileName: pkg.Trim(api.ConfigFIleName),
-		ConfigFilePath: pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
-	}, getValidator())
+func main() {
+	var err error
+	var deployment api.Deployment
+
+	deployment, err = api.NewDeployment(
+		pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
+		validate,
+	)
 
 	if err != nil {
-		log.Fatal("Error create the deployment runner: ", err)
+		log.Fatal("Error creating the deployment runner: ", err)
 	}
 
-	if err = ApiDeployment.ReadDBSecrets(); err != nil {
+	if err = deployment.ReadDBSecrets(); err != nil {
 		log.Fatal("Error reading DB secrets:", err)
 	}
 
-	fmt.Println("Username: ", ApiDeployment)
-}
-
-func getValidator() *validator.Validate {
-	return validator.New(
-		validator.WithRequiredStructEnabled(),
-	)
+	fmt.Println("Username: ", deployment)
 }

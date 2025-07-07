@@ -10,9 +10,9 @@ const DBUserNameFileName = "database.secrets.pg_username"
 const DBPasswordFileName = "database.secrets.pg_password"
 
 type Deployment struct {
-	Viper             *viper.Viper
+	Viper             *viper.Viper `validate:"required"`
 	DBSecrets         *DBSecrets
-	DeploymentRequest *DeploymentRequest
+	DeploymentRequest *DeploymentRequest `validate:"required"`
 }
 
 type DeploymentRequest struct {
