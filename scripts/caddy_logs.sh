@@ -4,7 +4,7 @@
 # This avoids Docker permission errors related to user home directories.
 
 # --- Configuration ---
-LOG_DIR="/var/log/oullin"
+LOG_DIR="/var/log/oullin/caddy"
 # Uses the environment variable $USER to get the currently logged-in user.
 CURRENT_USER=$USER
 
