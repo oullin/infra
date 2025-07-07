@@ -1,7 +1,11 @@
 package pkg
 
+import "strings"
+
 type Env struct {
-	AppMachine string
+	AppEnv            string `validate:"required,min=5"`
+	ProjectRoot       string `validate:"required,min=5"`
+	ApiConfigFilePath string `validate:"required,min=5"`
 }
 
 func (e Env) IsDev() bool {
@@ -9,5 +13,18 @@ func (e Env) IsDev() bool {
 }
 
 func (e Env) IsProduction() bool {
-	return e.AppMachine == "production"
+	return e.AppEnv == "production"
+}
+
+func (e Env) GetProjectRoot() string {
+	return e.ProjectRoot
+}
+
+func (e Env) GetApiConfigFilePath() string {
+	if e.IsProduction() {
+		return strings.TrimRight(e.ApiConfigFilePath, "/") + "/"
+	}
+
+	// Testing file.
+	return e.ProjectRoot + "/storage/api/"
 }

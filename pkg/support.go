@@ -48,5 +48,7 @@ func GetFileContent(path string) (string, error) {
 		return "", fmt.Errorf("Error: Failed to read file content from %s: %v\n", path, err)
 	}
 
+	fmt.Println("-> ", content)
+
 	return strings.TrimSpace(string(content)), nil
 }

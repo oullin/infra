@@ -7,21 +7,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewDeployment(configFilePath string, validator *validator.Validate) (Deployment, error) {
+func NewDeployment(env pkg.Env, validator validator.Validate) (Deployment, error) {
 	var deployment Deployment
+
+	fmt.Println("NewDeployment: ", env.ProjectRoot)
 
 	request := DeploymentRequest{
 		Command:        DeployCommand,
 		ConfigFileName: pkg.Trim(ConfigFIleName),
-		ConfigFilePath: pkg.Trim(configFilePath),
+		ConfigFilePath: env.GetApiConfigFilePath(),
 	}
 
 	if err := validator.Struct(request); err != nil {
 		return deployment, fmt.Errorf("invalid deployment request [%#v]: %v", request, err)
 	}
 
+	viper.AddConfigPath(env.GetApiConfigFilePath())
 	viper.SetConfigName(request.ConfigFileName)
-	viper.AddConfigPath(request.ConfigFilePath)
 	viper.SetConfigType(ConfigFIleType)
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -31,6 +33,7 @@ func NewDeployment(configFilePath string, validator *validator.Validate) (Deploy
 	deployment.DeploymentRequest = &request
 	deployment.Viper = viper.GetViper()
 	deployment.DBSecrets = nil
+	deployment.Env = &env
 
 	if err := validator.Struct(deployment); err != nil {
 		return deployment, fmt.Errorf("invalid deployment runner [%#v]: %v", request, err)
@@ -39,13 +42,32 @@ func NewDeployment(configFilePath string, validator *validator.Validate) (Deploy
 	return deployment, nil
 }
 
-func ParseDbCredentials(deployment Deployment) error {
-	v := deployment.Viper
-	//secrets := DBSecrets{}
+func ParseDBSecrets(deployment *Deployment) error {
+	dbSecrets := DBSecrets{}
 
-	fmt.Println(v.GetStringMap("database"))
-	fmt.Println(v.GetString(DBNameFileName))
-	fmt.Println(pkg.GetFileContent(v.GetString(DBNameFileName)))
+	namespace, fullPath := deployment.GetDbNamePair()
+	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+		return fmt.Errorf("[parser] error reading the db name file [%s]: %v", fullPath, err)
+	} else {
+		dbSecrets.DbName = dbName
+		dbSecrets.DbNameFile = namespace
+	}
+
+	namespace, fullPath = deployment.GetDbUserNamePair()
+	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+		return fmt.Errorf("[parser] error reading the username file [%s]: %v", fullPath, err)
+	} else {
+		dbSecrets.UserName = dbName
+		dbSecrets.UserNameFile = namespace
+	}
+
+	namespace, fullPath = deployment.GetDbPasswordPair()
+	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+		return fmt.Errorf("[parser] error reading the password file [%s]: %v", fullPath, err)
+	} else {
+		dbSecrets.Password = dbName
+		dbSecrets.PasswordFile = namespace
+	}
 
 	return nil
 }

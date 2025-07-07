@@ -10,34 +10,43 @@ import (
 	"os"
 )
 
+var env *pkg.Env
 var validate *validator.Validate
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file: ", err)
+		panic("Error loading .env file: " + err.Error())
 	}
 
 	validate = validator.New(
 		validator.WithRequiredStructEnabled(),
 	)
+
+	wd, _ := os.Getwd()
+
+	fmt.Println("Init: ", wd)
+
+	env = &pkg.Env{
+		ProjectRoot:       pkg.Trim(wd),
+		AppEnv:            pkg.Trim(os.Getenv("APP_ENV")),
+		ApiConfigFilePath: pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
+	}
+
+	if err := validate.Struct(env); err != nil {
+		panic("Invalid app env: " + err.Error())
+	}
 }
 
 func main() {
-	var err error
-	var deployment api.Deployment
-
-	deployment, err = api.NewDeployment(
-		pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
-		validate,
-	)
+	deployment, err := api.NewDeployment(*env, *validate)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err = api.ParseDbCredentials(deployment); err != nil {
+	if err = api.ParseDBSecrets(&deployment); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Username: ", deployment)
+	fmt.Println("Done ...")
 }
