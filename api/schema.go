@@ -7,7 +7,7 @@ import (
 
 const ConfigFIleName = "api"
 const ConfigFIleType = "yaml"
-const DeployCommand = "make build:deploy"
+const DeployCommand = "build:deploy"
 const DBNameFileName = "database.secrets.pg_dbname"
 const DBUserNameFileName = "database.secrets.pg_username"
 const DBPasswordFileName = "database.secrets.pg_password"

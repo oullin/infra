@@ -5,6 +5,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/oullin/infra/pkg"
 	"github.com/spf13/viper"
+	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -76,4 +78,22 @@ func (d *Deployment) GetDirectoryPair(seed string) (string, string) {
 	fullPath := d.Env.GetProjectRoot() + "/" + namespace
 
 	return namespace, fullPath
+}
+
+func (d *Deployment) Run() error {
+	projectRoot := d.Env.GetProjectRoot()
+	fmt.Printf("\n ---> Run: Root directory: %#v\n", projectRoot)
+
+	cmd := exec.Command("make", d.GetCommandArgs()...)
+
+	// Pass the parent environment to the child process.
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Error: 'make -C %s build:prod' command failed: %v\n", projectRoot, err)
+	}
+
+	return nil
 }
