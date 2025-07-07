@@ -24,11 +24,12 @@ func NewDeployment(env pkg.Env, validator validator.Validate) (Deployment, error
 	viper.SetConfigName(deployment.ConfigFileName)
 	viper.AddConfigPath(deployment.ConfigFilePath)
 
-	if err := viper.ReadInConfig(); err != nil {
+	deployment.Viper = viper.GetViper()
+
+	if err := deployment.Viper.ReadInConfig(); err != nil {
 		return deployment, fmt.Errorf("[api] error reading config file: %w", err)
 	}
 
-	deployment.Viper = viper.GetViper()
 	if err := validator.Struct(deployment); err != nil {
 		return deployment, fmt.Errorf("[api] invalid deployment runner [%#v]: %v", deployment, err)
 	}
