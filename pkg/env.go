@@ -5,6 +5,7 @@ import "path/filepath"
 type Env struct {
 	AppEnv            string `validate:"required,min=5"`
 	ProjectRoot       string `validate:"required,min=5"`
+	ApiProjectRoot    string `validate:"required,min=3"`
 	ApiConfigFilePath string `validate:"required,min=5"`
 }
 
@@ -14,10 +15,6 @@ func (e Env) IsDev() bool {
 
 func (e Env) IsProduction() bool {
 	return e.AppEnv == "production"
-}
-
-func (e Env) GetProjectRoot() string {
-	return e.ProjectRoot
 }
 
 func (e Env) GetApiConfigFilePath() string {

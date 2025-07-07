@@ -4,16 +4,16 @@ import "fmt"
 
 func (d *Deployment) GetCommandArgs() []string {
 	if d.Env.IsProduction() {
-		return d.ResolveCommandFor(d.Command)
+		return d.ResolveCommandFor(d.Env.ApiProjectRoot, d.Command)
 	}
 
-	return d.ResolveCommandFor("build-test")
+	return d.ResolveCommandFor(d.Env.ProjectRoot, "build-test")
 }
 
-func (d *Deployment) ResolveCommandFor(command string) []string {
+func (d *Deployment) ResolveCommandFor(directory string, command string) []string {
 	args := []string{
 		"-C",
-		d.Env.GetProjectRoot(),
+		directory,
 		command,
 		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", d.DBSecrets.UserNameFile),
 		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", d.DBSecrets.PasswordFile),

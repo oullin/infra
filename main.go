@@ -30,6 +30,7 @@ func init() {
 	env = &pkg.Env{
 		ProjectRoot:       pkg.Trim(wd),
 		AppEnv:            pkg.Trim(os.Getenv("APP_ENV")),
+		ApiProjectRoot:    pkg.Trim(os.Getenv("API_DIRECTORY")),
 		ApiConfigFilePath: pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
 	}
 

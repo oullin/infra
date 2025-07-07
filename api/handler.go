@@ -77,15 +77,12 @@ func (d *Deployment) GetDirectoryPair(seed string) (string, string) {
 		return namespace, d.Viper.GetString(seed)
 	}
 
-	fullPath := filepath.Join(d.Env.GetProjectRoot(), namespace)
+	fullPath := filepath.Join(d.Env.ProjectRoot, namespace)
 
 	return namespace, fullPath
 }
 
 func (d *Deployment) Run() error {
-	projectRoot := d.Env.GetProjectRoot()
-	fmt.Printf("\n ---> Run: Root directory: %#v\n", projectRoot)
-
 	cmd := exec.Command("make", d.GetCommandArgs()...)
 
 	// Pass the parent environment to the child process.
