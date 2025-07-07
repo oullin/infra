@@ -12,27 +12,28 @@ import (
 
 func main() {
 	var err error
-	err = godotenv.Load()
 
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err = godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file: ", err)
 	}
 
-	deployment, err := api.NewDeployment(api.DeploymentRequest{
+	var ApiDeployment api.Deployment
+
+	ApiDeployment, err = api.NewDeployment(api.DeploymentRequest{
 		Command:        api.DeployCommand,
-		ConfigFileName: pkg.Trim(os.Getenv("API_CONFIG_FILE_NAME")),
+		ConfigFileName: pkg.Trim(api.ConfigFIleName),
 		ConfigFilePath: pkg.Trim(os.Getenv("API_CONFIG_FILE_PATH")),
 	}, getValidator())
 
 	if err != nil {
-		log.Fatal("Error loading .env file:", err)
+		log.Fatal("Error create the deployment runner: ", err)
 	}
 
-	if err := deployment.ReadDBSecrets(); err != nil {
+	if err = ApiDeployment.ReadDBSecrets(); err != nil {
 		log.Fatal("Error reading DB secrets:", err)
 	}
 
-	fmt.Println("Username: ", deployment)
+	fmt.Println("Username: ", ApiDeployment)
 }
 
 func getValidator() *validator.Validate {

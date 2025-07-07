@@ -2,18 +2,23 @@ package api
 
 import "github.com/spf13/viper"
 
+const ConfigFIleName = "api"
+const ConfigFIleType = "yaml"
 const DeployCommand = "make build:deploy"
+const DBNameFileName = "database.secrets.pg_dbname"
+const DBUserNameFileName = "database.secrets.pg_username"
+const DBPasswordFileName = "database.secrets.pg_password"
+
+type Deployment struct {
+	Viper             *viper.Viper
+	DBSecrets         *DBSecrets
+	DeploymentRequest *DeploymentRequest
+}
 
 type DeploymentRequest struct {
 	ConfigFileName string
 	ConfigFilePath string
 	Command        string
-}
-
-type Deployment struct {
-	Viper             *viper.Viper
-	DBSecrets         *DBSecrets
-	DeploymentRequest DeploymentRequest
 }
 
 type DBSecrets struct {
