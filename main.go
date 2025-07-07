@@ -24,8 +24,6 @@ func init() {
 
 	wd, _ := os.Getwd()
 
-	fmt.Println("Init: ", wd)
-
 	env = &pkg.Env{
 		ProjectRoot:       pkg.Trim(wd),
 		AppEnv:            pkg.Trim(os.Getenv("APP_ENV")),
@@ -44,9 +42,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err = api.ParseDBSecrets(&deployment); err != nil {
+	if err = deployment.ParseDBSecrets(); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("DB name: %+v\n", deployment.DBSecrets.DbName)
+	fmt.Printf("DB username: %+v\n", deployment.DBSecrets.UserName)
+	fmt.Printf("DB password: %+v\n", deployment.DBSecrets.Password)
 
 	fmt.Println("Done ...")
 }

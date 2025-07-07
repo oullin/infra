@@ -5,12 +5,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/oullin/infra/pkg"
 	"github.com/spf13/viper"
+	"strings"
 )
 
 func NewDeployment(env pkg.Env, validator validator.Validate) (Deployment, error) {
 	var deployment Deployment
-
-	fmt.Println("NewDeployment: ", env.ProjectRoot)
 
 	request := DeploymentRequest{
 		Command:        DeployCommand,
@@ -42,10 +41,10 @@ func NewDeployment(env pkg.Env, validator validator.Validate) (Deployment, error
 	return deployment, nil
 }
 
-func ParseDBSecrets(deployment *Deployment) error {
+func (d *Deployment) ParseDBSecrets() error {
 	dbSecrets := DBSecrets{}
 
-	namespace, fullPath := deployment.GetDbNamePair()
+	namespace, fullPath := d.GetDirectoryPair(DBNameFileName)
 	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[parser] error reading the db name file [%s]: %v", fullPath, err)
 	} else {
@@ -53,7 +52,7 @@ func ParseDBSecrets(deployment *Deployment) error {
 		dbSecrets.DbNameFile = namespace
 	}
 
-	namespace, fullPath = deployment.GetDbUserNamePair()
+	namespace, fullPath = d.GetDirectoryPair(DBUserNameFileName)
 	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[parser] error reading the username file [%s]: %v", fullPath, err)
 	} else {
@@ -61,7 +60,7 @@ func ParseDBSecrets(deployment *Deployment) error {
 		dbSecrets.UserNameFile = namespace
 	}
 
-	namespace, fullPath = deployment.GetDbPasswordPair()
+	namespace, fullPath = d.GetDirectoryPair(DBPasswordFileName)
 	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[parser] error reading the password file [%s]: %v", fullPath, err)
 	} else {
@@ -69,5 +68,20 @@ func ParseDBSecrets(deployment *Deployment) error {
 		dbSecrets.PasswordFile = namespace
 	}
 
+	d.DBSecrets = &dbSecrets
+
 	return nil
+}
+
+// GetDirectoryPair (namespace, fullPath)
+func (d *Deployment) GetDirectoryPair(seed string) (string, string) {
+	namespace := strings.Trim(d.Viper.GetString(seed), "/")
+
+	if d.Env.IsProduction() {
+		return namespace, d.Viper.GetString(seed)
+	}
+
+	fullPath := d.Env.GetProjectRoot() + "/" + namespace
+
+	return namespace, fullPath
 }
