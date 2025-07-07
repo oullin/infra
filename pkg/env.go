@@ -1,5 +1,7 @@
 package pkg
 
+import "path/filepath"
+
 type Env struct {
 	AppEnv            string `validate:"required,min=5"`
 	ProjectRoot       string `validate:"required,min=5"`
@@ -24,5 +26,5 @@ func (e Env) GetApiConfigFilePath() string {
 	}
 
 	// Testing file.
-	return e.ProjectRoot + "/storage/api/"
+	return filepath.Join(e.ProjectRoot, "storage", "api") + "/"
 }

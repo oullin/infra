@@ -7,19 +7,20 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 func NewDeployment(env pkg.Env, validator validator.Validate) (Deployment, error) {
 	deployment := Deployment{
 		ConfigFilePath: env.GetApiConfigFilePath(),
-		ConfigFileName: pkg.Trim(ConfigFIleName),
+		ConfigFileName: pkg.Trim(ConfigFileName),
 		Command:        DeployCommand,
 		Env:            &env,
 		DBSecrets:      nil,
 	}
 
-	viper.SetConfigType(ConfigFIleType)
+	viper.SetConfigType(ConfigFileType)
 	viper.SetConfigName(deployment.ConfigFileName)
 	viper.AddConfigPath(deployment.ConfigFilePath)
 
@@ -39,26 +40,26 @@ func (d *Deployment) ParseDBSecrets() error {
 	dbSecrets := DBSecrets{}
 
 	namespace, fullPath := d.GetDirectoryPair(DBNameFileName)
-	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+	if value, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[api]  error parsing the db name file [%s]: %v", fullPath, err)
 	} else {
-		dbSecrets.DbName = dbName
+		dbSecrets.DbName = value
 		dbSecrets.DbNameFile = namespace
 	}
 
 	namespace, fullPath = d.GetDirectoryPair(DBUserNameFileName)
-	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+	if value, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[api]  error parsing the username file [%s]: %v", fullPath, err)
 	} else {
-		dbSecrets.UserName = dbName
+		dbSecrets.UserName = value
 		dbSecrets.UserNameFile = namespace
 	}
 
 	namespace, fullPath = d.GetDirectoryPair(DBPasswordFileName)
-	if dbName, err := pkg.GetFileContent(fullPath); err != nil {
+	if value, err := pkg.GetFileContent(fullPath); err != nil {
 		return fmt.Errorf("[api]  error parsing the password file [%s]: %v", fullPath, err)
 	} else {
-		dbSecrets.Password = dbName
+		dbSecrets.Password = value
 		dbSecrets.PasswordFile = namespace
 	}
 
@@ -75,7 +76,7 @@ func (d *Deployment) GetDirectoryPair(seed string) (string, string) {
 		return namespace, d.Viper.GetString(seed)
 	}
 
-	fullPath := d.Env.GetProjectRoot() + "/" + namespace
+	fullPath := filepath.Join(d.Env.GetProjectRoot(), namespace)
 
 	return namespace, fullPath
 }
@@ -92,7 +93,7 @@ func (d *Deployment) Run() error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error: 'make -C %s build:prod' command failed: %v\n", projectRoot, err)
+		return fmt.Errorf("Error: 'make %v' command failed: %v\n", d.GetCommandArgs(), err)
 	}
 
 	return nil

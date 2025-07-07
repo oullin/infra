@@ -22,7 +22,10 @@ func init() {
 		validator.WithRequiredStructEnabled(),
 	)
 
-	wd, _ := os.Getwd()
+	wd, err := os.Getwd()
+	if err != nil {
+		panic("Error getting working directory: " + err.Error())
+	}
 
 	env = &pkg.Env{
 		ProjectRoot:       pkg.Trim(wd),

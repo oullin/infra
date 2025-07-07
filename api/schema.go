@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-const ConfigFIleName = "api"
-const ConfigFIleType = "yaml"
+const ConfigFileName = "api"
+const ConfigFileType = "yaml"
 const DeployCommand = "build:deploy"
 const DBNameFileName = "database.secrets.pg_dbname"
 const DBUserNameFileName = "database.secrets.pg_username"
