@@ -1,30 +1,28 @@
 package pkg
 
-import "strings"
-
 type Env struct {
-	AppEnv            string `validate:"required,min=5"`
-	ProjectRoot       string `validate:"required,min=5"`
-	ApiConfigFilePath string `validate:"required,min=5"`
+    AppEnv            string `validate:"required,min=5"`
+    ProjectRoot       string `validate:"required,min=5"`
+    ApiConfigFilePath string `validate:"required,min=5"`
 }
 
 func (e Env) IsDev() bool {
-	return !e.IsProduction()
+    return !e.IsProduction()
 }
 
 func (e Env) IsProduction() bool {
-	return e.AppEnv == "production"
+    return e.AppEnv == "production"
 }
 
 func (e Env) GetProjectRoot() string {
-	return e.ProjectRoot
+    return e.ProjectRoot
 }
 
 func (e Env) GetApiConfigFilePath() string {
-	if e.IsProduction() {
-		return strings.TrimRight(e.ApiConfigFilePath, "/") + "/"
-	}
+    if e.IsProduction() {
+        return e.ApiConfigFilePath
+    }
 
-	// Testing file.
-	return e.ProjectRoot + "/storage/api/"
+    // Testing file.
+    return e.ProjectRoot + "/storage/api/"
 }
