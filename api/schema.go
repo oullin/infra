@@ -13,16 +13,12 @@ const DBUserNameFileName = "database.secrets.pg_username"
 const DBPasswordFileName = "database.secrets.pg_password"
 
 type Deployment struct {
-	Env               *pkg.Env
-	Viper             *viper.Viper `validate:"required"`
-	DBSecrets         *DBSecrets
-	DeploymentRequest *DeploymentRequest `validate:"required"`
-}
-
-type DeploymentRequest struct {
-	ConfigFileName string
-	ConfigFilePath string
-	Command        string
+	Env            *pkg.Env
+	Viper          *viper.Viper `validate:"required"`
+	DBSecrets      *DBSecrets
+	ConfigFileName string `validate:"required"`
+	ConfigFilePath string `validate:"required"`
+	Command        string `validate:"required"`
 }
 
 type DBSecrets struct {

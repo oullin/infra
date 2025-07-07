@@ -46,9 +46,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("DB name: %+v\n", deployment.DBSecrets.DbName)
+	fmt.Printf("\nDB name: %+v\n", deployment.DBSecrets.DbName)
 	fmt.Printf("DB username: %+v\n", deployment.DBSecrets.UserName)
-	fmt.Printf("DB password: %+v\n", deployment.DBSecrets.Password)
+	fmt.Printf("DB password: %+v\n\n", deployment.DBSecrets.Password)
 
 	fmt.Println("Done ...")
 }
