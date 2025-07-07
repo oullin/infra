@@ -35,8 +35,8 @@ func main() {
 		log.Fatal("Error creating the deployment runner: ", err)
 	}
 
-	if err = deployment.ReadDBSecrets(); err != nil {
-		log.Fatal("Error reading DB secrets:", err)
+	if err = api.ParseDbCredentials(deployment); err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println("Username: ", deployment)
