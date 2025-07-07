@@ -2,22 +2,42 @@ package api
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
 
-func NewDeployment(request DeploymentRequest, validator *validator.Validate) (*Deployment, error) {
-	if err := validator.Struct(request); err != nil {
-		return nil, fmt.Errorf("invalid deployment request [%#v]: %v", request, err)
+func (d *Deployment) ReadDBSecrets() error {
+	//viper := d.Viper
+	//secrets := DBSecrets{}
+
+	//fmt.Println(d.)
+	fmt.Println(d.DeploymentRequest.ConfigFileName)
+	fmt.Println(d.DeploymentRequest.ConfigFilePath)
+
+	viper.SetConfigName(d.DeploymentRequest.ConfigFileName)
+	viper.AddConfigPath(d.DeploymentRequest.ConfigFilePath)
+	viper.SetConfigType("yaml")
+
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	viper.SetConfigName(request.ConfigFileName)
-	viper.SetConfigName(request.ConfigFilePath)
-	viper.SetConfigFile("yaml")
-	viper.GetViper()
+	fmt.Println(viper.GetStringMap("database"))
+	panic("\n-------------")
 
-	return &Deployment{
-		Viper:     viper.GetViper(),
-		DBSecrets: DBSecrets{},
-	}, nil
+	//file := viper.GetString("database.secrets.pg_dbname")
+	//fmt.Println("File: ", file)
+	//
+	//value, err := pkg.GetFileContent(file)
+	//
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//secrets.DbNameFile = file
+	//secrets.DbName = value
+	//
+	//d.DBSecrets = &secrets
+
+	return nil
 }

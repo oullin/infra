@@ -28,7 +28,11 @@ func main() {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	fmt.Println("Deployment completed:", deployment)
+	if err := deployment.ReadDBSecrets(); err != nil {
+		log.Fatal("Error reading DB secrets:", err)
+	}
+
+	fmt.Println("Username: ", deployment)
 }
 
 func getValidator() *validator.Validate {
