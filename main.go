@@ -32,7 +32,7 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatal("Error creating the deployment runner: ", err)
+		log.Fatal(err)
 	}
 
 	if err = api.ParseDbCredentials(deployment); err != nil {

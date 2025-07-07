@@ -44,7 +44,8 @@ func ParseDbCredentials(deployment Deployment) error {
 	//secrets := DBSecrets{}
 
 	fmt.Println(v.GetStringMap("database"))
-	fmt.Println(v.GetString("database.secrets.pg_dbname"))
+	fmt.Println(v.GetString(DBNameFileName))
+	fmt.Println(pkg.GetFileContent(v.GetString(DBNameFileName)))
 
 	return nil
 }
