@@ -11,7 +11,7 @@ func (d *Deployment) GetCommandArgs() []string {
 		return d.GetProdCommand()
 	}
 
-	return d.ResolveCommandFor(d.Env.ProjectRoot, "build-test")
+	return d.GetTestingCommand()
 }
 
 func (d *Deployment) GetProdCommand() []string {
@@ -23,12 +23,9 @@ func (d *Deployment) GetProdCommand() []string {
 		"-C",
 		d.Env.ApiProjectRoot,
 		d.Command,
-		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", dbUsernameFile),
-		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", dbPasswordFile),
-		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", dbNameFile),
-		fmt.Sprintf("ENV_DB_USER_NAME=%s", d.DBSecrets.UserName),
-		fmt.Sprintf("ENV_DB_USER_PASSWORD=%s", d.DBSecrets.Password),
-		fmt.Sprintf("ENV_DB_DATABASE_NAME=%s", d.DBSecrets.DbName),
+		fmt.Sprintf("DB_SECRET_USERNAME=%s", dbUsernameFile),
+		fmt.Sprintf("DB_SECRET_PASSWORD=%s", dbPasswordFile),
+		fmt.Sprintf("DB_SECRET_DBNAME=%s", dbNameFile),
 	}
 
 	fmt.Printf("\n ---> Command: %#v\n", args)
@@ -36,17 +33,17 @@ func (d *Deployment) GetProdCommand() []string {
 	return args
 }
 
-func (d *Deployment) ResolveCommandFor(directory string, command string) []string {
+func (d *Deployment) GetTestingCommand() []string {
 	args := []string{
 		"-C",
-		directory,
-		command,
-		fmt.Sprintf("POSTGRES_USER_SECRET_PATH=%s", d.DBSecrets.UserNameFile),
-		fmt.Sprintf("POSTGRES_PASSWORD_SECRET_PATH=%s", d.DBSecrets.PasswordFile),
-		fmt.Sprintf("POSTGRES_DB_SECRET_PATH=%s", d.DBSecrets.DbNameFile),
-		fmt.Sprintf("ENV_DB_USER_NAME=%s", d.DBSecrets.UserName),
-		fmt.Sprintf("ENV_DB_USER_PASSWORD=%s", d.DBSecrets.Password),
-		fmt.Sprintf("ENV_DB_DATABASE_NAME=%s", d.DBSecrets.DbName),
+		d.Env.ProjectRoot,
+		"build-test",
+		fmt.Sprintf("DB_SECRET_USERNAME=%s", d.DBSecrets.UserNameFile),
+		fmt.Sprintf("DB_SECRET_PASSWORD=%s", d.DBSecrets.PasswordFile),
+		fmt.Sprintf("DB_SECRET_DBNAME=%s", d.DBSecrets.DbNameFile),
+		fmt.Sprintf("OTHER_DB_USER_NAME=%s", d.DBSecrets.UserName),
+		fmt.Sprintf("OTHER_DB_USER_PASSWORD=%s", d.DBSecrets.Password),
+		fmt.Sprintf("OTHER_DB_DATABASE_NAME=%s", d.DBSecrets.DbName),
 	}
 
 	fmt.Printf("\n ---> Command: %#v\n", args)
