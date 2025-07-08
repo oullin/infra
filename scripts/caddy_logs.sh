@@ -4,6 +4,8 @@
 # This avoids Docker permission errors related to user home directories.
 
 # --- Configuration ---
+# Example: ls -ld /var/log/oullin /var/log/oullin/caddy
+
 LOG_DIR="/var/log/oullin/caddy"
 # Uses the environment variable $USER to get the currently logged-in user.
 CURRENT_USER=$USER
