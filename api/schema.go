@@ -1,36 +1,31 @@
 package api
 
-const dbNameFileName = "postgres_db"
-const dbUserNameFileName = "postgres_user"
-const dbPasswordFileName = "postgres_password"
+import (
+	"github.com/oullin/infra/pkg"
+	"github.com/spf13/viper"
+)
 
-type DeploymentRequest struct {
-	SecretsDir   string `validate:"required"`
-	ProjectDir   string `validate:"required"`
-	CaddyLogsDir string `validate:"required"`
-}
+const ConfigFileName = "api"
+const ConfigFileType = "yaml"
+const DeployCommand = "build-deploy"
+const DBNameFileName = "database.secrets.pg_dbname"
+const DBUserNameFileName = "database.secrets.pg_username"
+const DBPasswordFileName = "database.secrets.pg_password"
 
 type Deployment struct {
-	secretsDir   string        `validate:"required"`
-	projectDir   string        `validate:"required"`
-	caddyLogsDir string        `validate:"required"`
-	dbSecrets    DbSecrets     `validate:"required"`
-	dbSecretFile DbSecretFiles `validate:"required"`
+	Env            *pkg.Env
+	Viper          *viper.Viper `validate:"required"`
+	DBSecrets      *DBSecrets
+	ConfigFileName string `validate:"required"`
+	ConfigFilePath string `validate:"required"`
+	Command        string `validate:"required"`
 }
 
-type DbSecrets struct {
-	dbUser string
-	dbName string
-	dbPass string
-}
-
-type DbSecretFiles struct {
-	dbUser string
-	dbName string
-	dbPass string
-}
-
-type Commands struct {
-	signature string
-	directory string
+type DBSecrets struct {
+	DbName       string `validate:"required"`
+	DbNameFile   string `validate:"required"`
+	UserName     string `validate:"required"`
+	UserNameFile string `validate:"required"`
+	Password     string `validate:"required"`
+	PasswordFile string `validate:"required"`
 }

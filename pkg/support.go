@@ -39,13 +39,14 @@ func FileExists(path string) error {
 }
 
 func GetFileContent(path string) (string, error) {
-	content, err := os.ReadFile(path)
+	if err := FileExists(path); err != nil {
+		return "", fmt.Errorf("Error: File not found: %s\n", path)
+	}
 
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("Error: Failed to read file content from %s: %v\n", path, err)
 	}
 
-	return strings.TrimSpace(
-		string(content),
-	), nil
+	return strings.TrimSpace(string(content)), nil
 }
