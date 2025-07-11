@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/oullin/infra/pkg"
 	"path/filepath"
 	"strings"
 )
@@ -28,7 +29,7 @@ func (d *Deployment) GetProdCommand() []string {
 		fmt.Sprintf("DB_SECRET_DBNAME=%s", dbNameFile),
 	}
 
-	fmt.Printf("\n ---> Command: %#v\n", args)
+	PrintArgs(args)
 
 	return args
 }
@@ -46,7 +47,12 @@ func (d *Deployment) GetTestingCommand() []string {
 		fmt.Sprintf("OTHER_DB_DATABASE_NAME=%s", d.DBSecrets.DbName),
 	}
 
-	fmt.Printf("\n ---> Command: %#v\n", args)
+	PrintArgs(args)
 
 	return args
+}
+
+func PrintArgs(args []string) {
+	fmt.Printf("\n--- Make Command: ")
+	fmt.Printf(pkg.CyanColour+"\n%#v\n\n"+pkg.Reset, args)
 }
