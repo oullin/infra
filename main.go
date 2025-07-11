@@ -50,15 +50,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("--- Main ---")
-	fmt.Printf("DB name: %+v\n", deployment.DBSecrets.DbName)
-	fmt.Printf("DB username: %+v\n", deployment.DBSecrets.UserName)
-	fmt.Printf("DB password: %+v\n", deployment.DBSecrets.Password)
-	fmt.Println("---------")
+	fmt.Println(pkg.YellowColour + "-------------- DB Secrets ---------------" + pkg.Reset)
+	fmt.Printf("      DB name    : %+v\n", deployment.DBSecrets.DbName)
+	fmt.Printf("      DB username: %+v\n", deployment.DBSecrets.UserName)
+	fmt.Printf("      DB password: %+v\n", deployment.DBSecrets.Password)
+	fmt.Println(pkg.YellowColour + "-----------------------------------------" + pkg.Reset)
 
 	if err = deployment.Run(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Done ...")
+	fmt.Println(pkg.MagentaColour + "\nDeployment request sent ..." + pkg.Reset)
 }
