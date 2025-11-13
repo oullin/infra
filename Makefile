@@ -59,7 +59,7 @@ build-local: clean-extractor
 	printf "\nBuilding for the local machine: ($$(go env GOOS)/$$(go env GOARCH))...\n"
 	cp $(ROOT_PATH)/.env $(ROOT_PATH)/bin/.env
 	docker build \
-		--build-arg BUILDER_IMAGE=golang:1.24-bookworm \
+		--build-arg BUILDER_IMAGE=golang:1.25.3-bookworm \
 		--build-arg BINARY_NAME=$(BINARY_NAME) \
 		--build-arg INFRA_USER=$(DOCKER_INFRA_USER) \
 		--build-arg INFRA_GROUP=$(DOCKER_INFRA_GROUP) \
