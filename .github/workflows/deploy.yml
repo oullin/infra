@@ -1,19 +1,11 @@
-# --- .github/workflows/deploy.yml
-#     This GitHub Actions workflow automates the deployment of the Go application.
-#     It builds the application, then securely deploys the binary and Makefile
-#     to a remote VPS and restarts a given supervisor service.
-
 name: VPS
 
 on:
     push:
         branches: [main]
-    pull_request:
-        branches: [main]
 
 jobs:
     deployment:
-        if: true
         strategy:
             matrix:
                 os: [ubuntu-24.04]
