@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.25.3
+ARG GO_VERSION=1.25.4
 
 # --- The builder image can be overridden. This allows to swap images for
 #     local compilations defaults to the lean Alpine image for production.

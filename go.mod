@@ -1,6 +1,6 @@
 module github.com/oullin/infra
 
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/go-playground/validator/v10 v10.26.0
