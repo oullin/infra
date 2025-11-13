@@ -1,11 +1,11 @@
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.25.4
 
 # --- The builder image can be overridden. This allows to swap images for
 #     local compilations defaults to the lean Alpine image for production.
 ARG BUILDER_IMAGE=golang:${GO_VERSION}-alpine
 
 # The final image base.
-ARG FINAL_IMAGE=alpine:latest
+ARG FINAL_IMAGE=alpine:3.22
 
 # Build-time variables for your application.
 ARG INFRA_VERSION="0.0.0.0"
