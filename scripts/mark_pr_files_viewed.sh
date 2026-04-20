@@ -1,14 +1,35 @@
 #!/bin/bash
 set -euo pipefail
 
-# Marks all unviewed files in a GitHub pull request as "Viewed" using the GraphQL API.
+# mark_pr_files_viewed.sh
+#
+# Marks all unviewed files in a GitHub pull request as "Viewed" using the
+# GitHub GraphQL API (markFileAsViewed mutation).
+#
+# Files already marked as viewed are skipped. Unviewed files are sent in
+# batched GraphQL mutations (default 20 per request) to reduce API calls.
+#
+# Authentication — one of:
+#   --token=<vault/item/field>   Read a fine-grained PAT from 1Password (op CLI)
+#   GITHUB_TOKEN=<token>         Pass the token directly via environment variable
+#
+# Dependencies:
+#   - gh      (GitHub CLI — https://cli.github.com)
+#   - python3 (JSON parsing)
+#   - op      (1Password CLI — only when using --token)
 #
 # Usage:
-#   GITHUB_TOKEN="ghp_xxx" bash scripts/mark_pr_files_viewed.sh --owner=<name> --repo=<repo> --pr=<number>
+#   bash scripts/mark_pr_files_viewed.sh --owner=<name> --repo=<repo> --pr=<number> [--token=<ref>]
+#
+# Examples:
+#   bash scripts/mark_pr_files_viewed.sh --owner=oullin --repo=infra --pr=11 --token=Private/GitHub\ PAT/token
+#   GITHUB_TOKEN="ghp_xxx" bash scripts/mark_pr_files_viewed.sh --owner=oullin --repo=infra --pr=11
+
+# --- Configuration ---
 
 BATCH_SIZE=20
 
-# --- Colors & symbols ---
+# --- Output helpers ---
 BOLD="\033[1m"
 DIM="\033[2m"
 GREEN="\033[32m"
@@ -24,7 +45,7 @@ warn()    { echo -e "  ${YELLOW}!${RESET} $1"; }
 error()   { echo -e "  ${RED}✖${RESET} $1" >&2; }
 header()  { echo -e "\n${BOLD}$1${RESET}"; }
 
-# --- Help ---
+# --- Help output ---
 show_help() {
   echo ""
   echo -e "${BOLD}Mark PR Files as Viewed${RESET}"
@@ -75,7 +96,9 @@ for arg in "$@"; do
   esac
 done
 
-# --- Resolve token ---
+# --- Resolve authentication token ---
+# --token takes priority: reads the secret from 1Password via `op read`.
+# Falls back to the GITHUB_TOKEN environment variable.
 if [[ -n "$TOKEN_REF" ]]; then
   if ! command -v op &> /dev/null; then
     error "'op' CLI is not installed. Install it from https://1password.com/downloads/command-line"
@@ -91,12 +114,14 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   exit 1
 fi
 
+# --- Validate required arguments ---
 if [[ -z "$OWNER" || -z "$REPO" || -z "$PR_NUMBER" ]]; then
   error "Missing required arguments."
   echo -e "  Run ${CYAN}$0 --help${RESET} for usage information." >&2
   exit 1
 fi
 
+# --- Validate dependencies ---
 if ! command -v gh &> /dev/null; then
   error "'gh' CLI is not installed. Install it from https://cli.github.com"
   exit 1
@@ -104,7 +129,9 @@ fi
 
 export GH_TOKEN="$GITHUB_TOKEN"
 
-# --- Fetch PR files and their viewed state via GraphQL ---
+# --- Fetch PR files and their viewed state ---
+# Uses GraphQL to retrieve every file in the PR along with its viewerViewedState
+# (VIEWED, UNVIEWED, or DISMISSED). Paginates in pages of 100.
 header "Fetching PR #${PR_NUMBER} from ${OWNER}/${REPO}"
 
 CURSOR=""
@@ -135,11 +162,12 @@ while true; do
     }
   ")
 
+  # Extract the PR node ID from the first response (needed for the mutation).
   if [[ -z "$PR_NODE_ID" ]]; then
-    PR_NODE_ID=$(echo "$RESPONSE" | gh api graphql -f query='query { __typename }' > /dev/null 2>&1 || true)
     PR_NODE_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['repository']['pullRequest']['id'])")
   fi
 
+  # Separate files into viewed and unviewed buckets.
   while IFS=$'\t' read -r path state; do
     if [[ "$state" == "VIEWED" ]]; then
       ALREADY_VIEWED=$((ALREADY_VIEWED + 1))
@@ -153,6 +181,7 @@ for n in nodes:
     print(n['path'] + '\t' + n['viewerViewedState'])
 ")
 
+  # Advance the cursor if there are more pages.
   HAS_NEXT=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['repository']['pullRequest']['files']['pageInfo']['hasNextPage'])")
   if [[ "$HAS_NEXT" == "True" ]]; then
     CURSOR=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['repository']['pullRequest']['files']['pageInfo']['endCursor'])")
@@ -177,7 +206,9 @@ fi
 
 info "${#ALL_UNVIEWED[@]} file(s) to mark as viewed"
 
-# --- Mark files as viewed in batches ---
+# --- Mark unviewed files in batches ---
+# Builds a single GraphQL mutation per batch using aliased fields (f0, f1, ...)
+# to call markFileAsViewed for multiple files in one HTTP request.
 header "Marking files as viewed (batch size: ${BATCH_SIZE})"
 
 MARKED=0
