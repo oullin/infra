@@ -127,6 +127,11 @@ if ! command -v gh &> /dev/null; then
   exit 1
 fi
 
+if ! command -v python3 &> /dev/null; then
+  error "'python3' is not installed. It is required for JSON parsing."
+  exit 1
+fi
+
 export GH_TOKEN="$GITHUB_TOKEN"
 
 # --- Fetch PR files and their viewed state ---
@@ -223,7 +228,8 @@ for ((i = 0; i < UNVIEWED_COUNT; i += BATCH_SIZE)); do
   MUTATION="mutation {"
   for j in "${!BATCH[@]}"; do
     FILE="${BATCH[$j]}"
-    ESCAPED_FILE=$(echo "$FILE" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    ESCAPED_FILE="${FILE//\\/\\\\}"
+    ESCAPED_FILE="${ESCAPED_FILE//\"/\\\"}"
     MUTATION+="
     f${j}: markFileAsViewed(input: { pullRequestId: \"${PR_NODE_ID}\", path: \"${ESCAPED_FILE}\" }) {
       pullRequest { id }
